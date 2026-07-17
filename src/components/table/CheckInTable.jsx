@@ -1,18 +1,24 @@
 import { useState } from "react";
-function CheckInTable({hardwares, onDataChange}) {
+import "../css/Table.css";
+function CheckInTable({hardwaresList, onDataChange}) {
+  // List of requests parameter
   const [requests, setRequests] = useState({});
 
-function handleRequestChange(hardware, value) {
-    const quantity = Number(value);
+  // Handle request change
+  function handleRequestChange(hardware, value) {
+    const quantity = Number(value); // Convert input value to number
 
+    // Update requests state
     const updatedRequests = {
-      ...requests,
-      [hardware.id]: quantity,
+      ...requests, // Keep existing requests
+      [hardware.id]: quantity, // Update quantity for the specific hardware
     };
 
+    // update requests parameter
     setRequests(updatedRequests);
 
-    const selectedItems = hardwares
+    // Update selected items (only with a request quantity)
+    const selectedItems = hardwaresList
       .map((item) => ({
         ...item,
         requestQuantity: updatedRequests[item.id] ?? 0,
@@ -21,58 +27,29 @@ function handleRequestChange(hardware, value) {
 
     onDataChange(selectedItems);
   }
-
-  const tableStyle = {
-    width: "100%",
-    borderCollapse: "collapse",
-    backgroundColor: "#ffffff",
-  };
-
-  const headerStyle = {
-    padding: "12px",
-    border: "1px solid #dddddd",
-    backgroundColor: "#f3f4f6",
-    textAlign: "left",
-  };
-
-  const cellStyle = {
-    padding: "12px",
-    border: "1px solid #dddddd",
-    textAlign: "left",
-  };
-
   return (
-    <div
-      style={{
-        width: "100%",
-        maxWidth: "900px",
-        margin: "24px auto",
-        overflowX: "auto",
-      }}
-    >
-      <table style={tableStyle}>
+    <div style={{width: "100%",maxWidth: "900px", margin: "24px auto",  overflowX: "auto" }} >
+      <table className="check-table">
         <thead>
           <tr>
-            <th style={headerStyle}>Hardware Name</th>
-            <th style={headerStyle}>Capacity</th>
-            <th style={headerStyle}>Available</th>
-            <th style={headerStyle}>Request</th>
+            <th className="check-table-header">Hardware Name</th>
+            <th className="check-table-header">Checked Out</th>
+            <th className="check-table-header">Return</th>
           </tr>
         </thead>
 
         <tbody>
-          {hardwares.map((hardware) => (
+          {hardwaresList.map((hardware) => (
             <tr key={hardware.name}>
-              <td style={cellStyle}>{hardware.name}</td>
-              <td style={cellStyle}>
-                {hardware.capacity.toLocaleString()}
+              <td className="check-table-cell">{hardware.name}</td>
+              <td className="check-table-cell">
+                {hardware.checkedOut.toLocaleString()}
               </td>
-              <td style={cellStyle}>{hardware.available.toLocaleString()}</td>
-              <td style={cellStyle}>
+              <td className="check-table-cell">
                 <input
                   type="number"
                   min="0"
-                  max={hardware.available}
+                  max={hardware.checkedOut}
                   value={requests[hardware.id]}
                   onChange={(event) =>
                     handleRequestChange(hardware, event.target.value)

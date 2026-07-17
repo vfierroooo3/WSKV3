@@ -1,8 +1,10 @@
 import { useNavigate } from "react-router-dom";
-import MainLayout from "../layout/MainLayout.jsx";
+import MainLayout from "../components/layout/MainLayout.jsx";
 
 function CreateProjectPage() {
   const navigate = useNavigate();
+
+  // Create Project
   function handleNewProject(event) {
     event.preventDefault();
     const formData = new FormData(event.target);
@@ -12,12 +14,13 @@ function CreateProjectPage() {
     if (successfulCreation) {
       navigate(`/main-page`);
     }else{
-        document.getElementById("error-message").innerText = "Failed to create project.";
+      document.getElementById("error-message").innerText = "Failed to create project.";
     }
   }
+
   return (
     <MainLayout>
-      <div  style={{ display: "flex", flexDirection: "column", alignItems: "center"}}>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center"}}>
         <h1>Create Project</h1>
         <form style={{ display: "flex", flexDirection: "column", gap: "12px", width: "300px"}} onSubmit={handleNewProject}>
           <div>

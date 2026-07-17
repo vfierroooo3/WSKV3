@@ -1,76 +1,43 @@
-function ProjectTable() {
-  function getProjectList(){
-    // Call API to fetch project list
-  }
-  // getProjectList()
-  const projects = [
-    {
-      id: 1,
-      name: "Project Alpha",
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "Project Beta",
-      status: "Active",
-    },
-    {
-      id: 3,
-      name: "Project Gamma",
-      status: "Completed",
-    },
-  ];
+import { useNavigate } from "react-router-dom";
+import "../css/Table.css";
 
-  const tableStyle = {
-    width: "530px",
-    borderCollapse: "collapse",
-    backgroundColor: "#ffffff",
-  };
+function ProjectTable({ projects }) {
 
-  const headerStyle = {
-    padding: "12px",
-    border: "1px solid #dddddd",
-    backgroundColor: "#f3f4f6",
-    textAlign: "left",
-  };
-
-  const cellStyle = {
-    padding: "12px",
-    border: "1px solid #dddddd",
-    textAlign: "left",
-  };
+  const navigate = useNavigate();
 
   return (
-    <div
-      style={{
-        width: "100%",
-        maxWidth: "900px",
-        overflowX: "auto",
-      }}
-    >
-      <table style={tableStyle}>
+    <div style={{ width: "100%", maxWidth: "900px", overflowX: "auto" }}>
+      <table className="project-table">
         <thead>
           <tr>
-            <th style={headerStyle}>Project ID</th>
-            <th style={headerStyle}>Project Name</th>
-            <th style={headerStyle}>Status</th>
-            <th style={headerStyle}>Action</th>
+            <th className="project-table-header">Project ID</th>
+            <th className="project-table-header">Project Name</th>
+            <th className="project-table-header">Action</th>
           </tr>
         </thead>
 
         <tbody>
           {projects.map((project) => (
             <tr key={project.id}>
-              <td style={cellStyle}>{project.id}</td>
-              <td style={cellStyle}>{project.name}</td>
-              <td style={cellStyle}>{project.status}</td>
-              <td style={{ ...cellStyle, display: "flex", gap: "10px" }}>
-                <button type="button">
-                  Check In
-                </button>
-                <button type="button">
-                  Check Out
-                </button>
+              <td className="project-table-cell">{project.id}</td>
+              <td className="project-table-cell">{project.name}</td>
+              <td>
+                {project.join ? (
+                  <div className="project-table-cell" style={{ display: "flex", gap: "10px" }}>
+                    <button type="button" onClick={() => navigate('/check-out', { state: { projectId: project.id } })}>
+                      Check Out
+                    </button>
+                    <button type="button" onClick={() => navigate('/check-in', { state: { projectId: project.id } })}>
+                      Check In
+                    </button>
+                  </div>
+                ) : (
+                  <div className="project-table-cell" style={{ display: "flex", gap: "10px" }}>
+                    <button type="button" style={{ width: "100%" }}>
+                      Join Project
+                    </button>
+                  </div>
+                )}
               </td>
             </tr>
           ))}

@@ -2,7 +2,7 @@ import Header from "./Header";
 
 function MainLayout({ children }) {
   return (
-    <>
+    <div>
       <Header />
 
       <main
@@ -12,7 +12,7 @@ function MainLayout({ children }) {
       >
         {children}
       </main>
-    </>
+    </div>
   );
 }
 

@@ -4,6 +4,7 @@ function CreateUserPage() {
     
     const navigate = useNavigate();
 
+    // Check password validity
     function checkPassword(){
         const userId = document.getElementById("user-id").value;
         const newPassword = document.getElementById("new-password").value;
@@ -22,6 +23,7 @@ function CreateUserPage() {
         handleCreateUser(userId, newPassword, errorMessage);
     }
 
+    // Handle user creation
     function handleCreateUser(userId, newPassword, errorMessage) {
         // Call backend API to create user
         let successfulCreation = true; // Simulate API call
@@ -34,10 +36,9 @@ function CreateUserPage() {
     }
     
     return (
-        <main style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "24px"}}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "24px"}}>
             <h1>Create User</h1>
             <div style={{display: "flex", flexDirection: "column", gap: "12px", width: "300px"}}>
-
                 <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                     New UserId: <input type="text" id="user-id" placeholder="Please Enter UserId" />
                 </div>
@@ -60,7 +61,7 @@ function CreateUserPage() {
                     <a href="/">Back to Login</a>
                 </div>
             </div>
-        </main>
+        </div>
     );
 }
 

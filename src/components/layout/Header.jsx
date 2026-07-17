@@ -14,8 +14,6 @@ function Header() {
 
     <nav style={{ display: "flex", gap: "16px" }}>
       <a href="/main-page">Projects</a>
-      <a href="/check-in">Check In</a>
-      <a href="/check-out">Check Out</a>
     </nav>
     </header>
   );
