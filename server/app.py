@@ -1,32 +1,34 @@
 # Import necessary libraries and modules
 from bson.objectid import ObjectId
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from pymongo import MongoClient
 
 # Import custom modules for database interactions
-import usersDB
-import projectsDB
-import hardwareDB
+import usersDatabase
+import projectsDatabase
+import hardwareDatabase
 
 # Define the MongoDB connection string
-MONGODB_SERVER = "your_mongodb_connection_string_here"
+MONGODB_SERVER = "mongodb+srv://katierafdahl_db_user:45sfmVPrbATWYm3t@wskv3.zcpyq8u.mongodb.net/?appName=WSKV3"
 
 # Initialize a new Flask web application
 app = Flask(__name__)
+CORS(app) # using cors is supposed to help remedy differences in port of flask and react
 
 # Route for user login
 @app.route('/login', methods=['POST'])
 def login():
     # Extract data from request
-
+    data = request.get_json()
     # Connect to MongoDB
-
+    client = MongoClient(MONGODB_SERVER)
     # Attempt to log in the user using the usersDB module
-
+    result = usersDatabase.login(client,data['userId'],data['password'])
     # Close the MongoDB connection
-
+    client.close()
     # Return a JSON response
-    return jsonify({})
+    return jsonify(result)
 
 # Route for the main page (Work in progress)
 @app.route('/main')
@@ -60,15 +62,15 @@ def join_project():
 @app.route('/add_user', methods=['POST'])
 def add_user():
     # Extract data from request
-
+    data = request.get_json()
     # Connect to MongoDB
-
+    client = MongoClient(MONGODB_SERVER)
     # Attempt to add the user using the usersDB module
-
+    result = usersDatabase.addUser(client,data['userId'],data['password'])
     # Close the MongoDB connection
-
+    client.close()
     # Return a JSON response
-    return jsonify({})
+    return jsonify(result)
 
 # Route for getting the list of user projects
 @app.route('/get_user_projects_list', methods=['POST'])
