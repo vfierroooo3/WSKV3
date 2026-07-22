@@ -1,12 +1,11 @@
 # Import necessary libraries and modules
 from pymongo import MongoClient
 
-import projectsDB
+import projectsDatabase
 
 '''
 Structure of User entry:
 User = {
-    'username': username,
     'userId': userId,
     'password': password,
     'projects': [project1_ID, project2_ID, ...]
@@ -14,19 +13,58 @@ User = {
 '''
 
 # Function to add a new user
-def addUser(client, username, userId, password):
-    # Add a new user to the database
-    pass
+def addUser(client, userId, password):
 
-# Helper function to query a user by username and userId
-def __queryUser(client, username, userId):
+    # Access the database via client
+    db = client.WSKV3
+
+    # Access users collection
+    users = db.Users
+
+    # Does a user with this userId already exist?
+    existing_user = __queryUser(client, userId)
+    if existing_user:
+        return {'success': False, 'message': 'UserId already taken'}
+
+    # Add a new user to the database (add a new user document)
+    user_doc ={
+            'userId': userId,
+            'password':password,
+            'projects': []
+            }
+
+    # Insert new user 
+    result = users.insert_one(user_doc)
+
+    return {'success':True, 'message': 'User created','insertedId': str(result.inserted_id)}
+
+# Helper function to query a user by userId
+def __queryUser(client, userId):
     # Query and return a user from the database
-    pass
+
+    # Access database and users collection
+    db = client.WSKV3
+    users = db.Users
+
+    # find a user
+    return users.find_one({"userId":userId})
+
+    
 
 # Function to log in a user
-def login(client, username, userId, password):
+def login(client, userId, password):
     # Authenticate a user and return login status
-    pass
+
+    # Check that a user exists
+    existing_user = __queryUser(client,userId)
+    if not existing_user:
+        return {'success': False, 'message': 'Invalid UserId or Password'}
+
+    # Check that the password matches
+    if existing_user['password'] == password:
+        return {'success':True,'message':'Login successful'}
+    else:
+        return {'success': False, 'message': 'Invalid UserId or Password'}
 
 # Function to add a user to a project
 def joinProject(client, userId, projectId):
