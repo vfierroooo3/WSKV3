@@ -36,3 +36,19 @@
   border: 1px solid #dddddd;
   text-align: left;
 };
+
+/* View Table */
+.view-table {
+  width: 100%;
+}
+.view-table-header {
+  padding: 12px;
+  border: 1px solid #000000;
+  background-color: lightgray;
+  text-align: left;
+}
+.view-table-cell {
+  padding: 12px;
+  border: 1px solid #000000;
+  text-align: left;
+}

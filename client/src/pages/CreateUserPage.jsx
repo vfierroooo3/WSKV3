@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import "../components/css/Button.css"
 
 function CreateUserPage() {
     
@@ -53,7 +54,7 @@ function CreateUserPage() {
 
                 <span style={{ color: "red" }} id="error-message"></span>
 
-                <button type="button" onClick={checkPassword}>
+                <button type="button" onClick={checkPassword} className="custom-button">
                     Create User
                 </button>
 

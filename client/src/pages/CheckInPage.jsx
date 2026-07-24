@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import "../components/css/Button.css"
 import MainLayout from "../components/layout/MainLayout.jsx";
 import CheckInTable from "../components/table/CheckInTable.jsx";
 
@@ -7,6 +8,7 @@ function CheckInPage() {
   // Get project ID from location state
   const location = useLocation();
   const projectId = location.state?.projectId;
+  const projectName = location.state?.projectName;
 
   // List of hardwares parameter
   const [hardwaresList, setHardwaresList] = useState([]);
@@ -51,13 +53,15 @@ function CheckInPage() {
   return (
     <MainLayout>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center"}}>
-        <h1>Check In (ID: {projectId})</h1>
+        <h1>Check In Rescoures</h1>
         <form onSubmit={handleCheckIn}>
+          <h3>Project ID: {projectId}</h3>
+          <h3>Project Name: {projectName}</h3>
           <CheckInTable
             hardwaresList={hardwaresList} // List of hardwares
             onDataChange={handleTableChange} // Handle table data change
           />
-          <button type="submit" style={{ width: "100%"}}>Check In</button>
+          <button type="submit" className="custom-button">Check In</button>
         </form>
       </div>
     </MainLayout>

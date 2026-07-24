@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import NavigateButton from "../button/NavigateButton";
 import "../css/Table.css";
 function ProjectTable({ projects }) {
   const navigate = useNavigate();
@@ -20,9 +21,7 @@ function ProjectTable({ projects }) {
               <td className="project-table-cell">{project.id}</td>
               <td className="project-table-cell">{project.name}</td>
               <td className="project-table-cell" style={{ display: "flex", alignItems: "center" }}>
-                <button type="button" style={{width: "100%"}} onClick={() => navigate("/edit-project", {state: {projectId: project.id}})}>
-                  Edit
-                </button>
+                <NavigateButton text="View" destination="/view-project" data={{ projectId: project.id }}/>
               </td>
             </tr>
           ))}
