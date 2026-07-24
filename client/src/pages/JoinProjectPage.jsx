@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import "../components/css/Button.css"
 import MainLayout from "../components/layout/MainLayout.jsx";
 
-function CreateProjectPage() {
+function JoinProjectPage() {
   const navigate = useNavigate();
 
   // Create Project
@@ -15,31 +15,18 @@ function CreateProjectPage() {
     if (successfulCreation) {
       navigate(`/main-page`);
     }else{
-      document.getElementById("error-message").innerText = "Failed to create project.";
+      document.getElementById("error-message").innerText = "ID is not correct!";
     }
   }
 
   return (
     <MainLayout>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center"}}>
-        <h1>Create Project</h1>
+        <h1>Join Project</h1>
         <form style={{ display: "flex", flexDirection: "column", gap: "12px", width: "300px"}} onSubmit={handleNewProject}>
-          <div>
-            <label>ID:</label>
-            <br/>
+            <label>Existing Project ID:</label>
             <input type="text" id="projectId" name="projectId" style={{width: "300px"}}/>
-          </div>
-          <div>
-            <label>Name:</label>
-            <br/>
-            <input type="text" id="projectName" name="projectName" required style={{width: "300px"}} />
-          </div>
-          <div>
-            <label>Description:</label>
-            <br/>
-            <textarea id="projectDescription" name="projectDescription" required style={{width: "300px", height: "100px"}} />
-          </div>
-          <button type="submit" className="custom-button">Create Project</button>
+            <button type="submit" className="custom-button">Join Project</button>
         </form>
         <span id="error-message" style={{ color: "red" }}></span>
       </div>
@@ -47,4 +34,4 @@ function CreateProjectPage() {
   );
 }
 
-export default CreateProjectPage;
+export default JoinProjectPage;

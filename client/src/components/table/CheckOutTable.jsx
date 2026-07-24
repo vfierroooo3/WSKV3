@@ -34,7 +34,7 @@ function CheckOutTable({hardwaresList, onDataChange}) {
             <th className="check-table-header">Hardware Name</th>
             <th className="check-table-header">Capacity</th>
             <th className="check-table-header">Available</th>
-            <th className="table-header">Request</th>
+            <th className="check-table-header">Request</th>
           </tr>
         </thead>
 

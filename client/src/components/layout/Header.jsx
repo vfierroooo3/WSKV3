@@ -1,4 +1,7 @@
+import { Link } from "react-router-dom";
+
 function Header() {
+
   return (
     <header
       style={{
@@ -10,11 +13,13 @@ function Header() {
         padding: "0 24px",
       }}
     >
-    <h2>ADVANCED PROG AND APP DEV I | Team Project 3</h2>
+      <h2>ADVANCED PROG AND APP DEV I | Team Project 3</h2>
 
-    <nav style={{ display: "flex", gap: "16px" }}>
-      <a href="/main-page">Projects</a>
-    </nav>
+      <div style={{display: "flex", gap: "16px"}}>
+        <Link to="/main-page">Projects</Link>
+
+        <Link to="/">Log out</Link>
+      </div>
     </header>
   );
 }

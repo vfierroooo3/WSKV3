@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import "../components/css/Button.css"
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -43,7 +44,7 @@ function LoginPage() {
 
           <span style={{ color: "red" }} id="error-message"></span>
 
-          <button type="button" onClick={checkLogin}>
+          <button type="button" onClick={checkLogin} className="custom-button">
             Login
           </button>
 

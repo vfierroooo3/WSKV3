@@ -4,7 +4,8 @@ import LoginPage from "./pages/LoginPage.jsx";
 import MainPage from "./pages/MainPage.jsx";
 import CreateUserPage from "./pages/CreateUserPage.jsx";
 import CreateProjectPage from "./pages/CreateProjectPage.jsx";
-import EditProjectPage from "./pages/EditProjectPage.jsx";
+import JoinProjectPage from "./pages/JoinProjectPage.jsx";
+import ViewProjectPage from "./pages/ViewProjectPage.jsx";
 import CheckOutPage from "./pages/CheckOutPage.jsx";
 import CheckInPage from "./pages/CheckInPage.jsx";
 
@@ -16,7 +17,8 @@ function App() {
         <Route path="/create-user" element={<CreateUserPage />} />
         <Route path="/main-page" element={<MainPage />} />
         <Route path="/create-project" element={<CreateProjectPage />} />
-        <Route path="/edit-project" element={<EditProjectPage />} />
+        <Route path="/join-project" element={<JoinProjectPage />} />
+        <Route path="/view-project" element={<ViewProjectPage />} />
         <Route path="/check-out" element={<CheckOutPage />} />
         <Route path="/check-in" element={<CheckInPage />} />
       </Routes>

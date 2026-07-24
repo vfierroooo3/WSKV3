@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import "../components/css/Button.css"
 import MainLayout from "../components/layout/MainLayout.jsx";
 import CheckOutTable from "../components/table/CheckOutTable.jsx";
 
@@ -7,7 +8,8 @@ function CheckOutPage() {
   // Get project ID from location state
   const location = useLocation();
   const projectId = location.state?.projectId;
-
+  const projectName = location.state?.projectName;
+  
   // hardware list parameters
   const [hardwaresList, setHardwaresList] = useState([]);
 
@@ -42,7 +44,6 @@ function CheckOutPage() {
   // Check out items submit handler
   function handleCheckOut(event) {
     event.preventDefault();
-    console.log("Check out items:", checkOutItems);
     // call API to check out items
   }
 
@@ -54,13 +55,15 @@ function CheckOutPage() {
   return (
     <MainLayout>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center"}}>
-        <h1>Check Out (ID: {projectId})</h1>
+        <h1>Check Out Resources</h1>
         <form onSubmit={handleCheckOut}>
+          <h3>Project ID: {projectId}</h3>
+          <h3>Project Name: {projectName}</h3>
           <CheckOutTable
             hardwaresList={hardwaresList} // Pass hardware list to table
             onDataChange={handleTableChange} // Handle data change from table
           />
-          <button type="submit" style={{ width: "100%"}}>Check Out</button>
+          <button type="submit" className="custom-button">Check Out</button>
         </form>
       </div>
     </MainLayout>
