@@ -2,6 +2,7 @@
 from pymongo import MongoClient
 
 import projectsDatabase
+import databaseHelpers
 
 '''
 Structure of User entry:
@@ -14,12 +15,6 @@ User = {
 
 # Function to add a new user
 def addUser(client, userId, password):
-
-    # Access the database via client
-    db = client.WSKV3
-
-    # Access users collection
-    users = db.Users
 
     # Does a user with this userId already exist?
     existing_user = __queryUser(client, userId)
@@ -34,6 +29,7 @@ def addUser(client, userId, password):
             }
 
     # Insert new user 
+    users = databaseHelpers.access_collection(client, "Users")
     result = users.insert_one(user_doc)
 
     return {'success':True, 'message': 'User created','insertedId': str(result.inserted_id)}
@@ -43,8 +39,7 @@ def __queryUser(client, userId):
     # Query and return a user from the database
 
     # Access database and users collection
-    db = client.WSKV3
-    users = db.Users
+    users = databaseHelpers.access_collection(client,"Users")
 
     # find a user
     return users.find_one({"userId":userId})
