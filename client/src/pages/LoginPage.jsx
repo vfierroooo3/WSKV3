@@ -19,17 +19,28 @@ function LoginPage() {
   }
 
   // Handle login
-  function handleLogin(userId, password, errorMessage) {
-    // call API
-    let successfulLogin = true; // Simulate API call
+  async function handleLogin(userId, password, errorMessage) {
+    try {
+      const response = await fetch("http://127.0.0.1:5000/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ userId, password })
+      });
 
-    if(successfulLogin){
-      navigate("/main-page", { state: { userId: userId } });
-    }else{
-      errorMessage.innerText = "Invalid UserId or Password!";
+      const result = await response.json();
+
+      if (result.success) {
+        navigate("/main-page", { state: { userId: userId } });
+      } else {
+        errorMessage.innerText = result.message;
+      }
+    } catch (error) {
+      console.error("Error during login:", error);
+      errorMessage.innerText = "An error occurred during login. Please try again.";
     }
-  }
-
+    }
   return (
     <main style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "24px"}}>
       <h1>Login</h1>
