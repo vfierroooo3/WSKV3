@@ -35,7 +35,7 @@ def createProject(client, projectName, projectId, description):
         'projectName': projectName,
             'projectId': projectId,
             'description': description,
-            'hwSets': {"HW1": 0, "HW2": 0}, # change this to match our hardware names?
+            'hwSets': {"Jet": 0, "Helicopter": 0}, 
             'users': []
             }
 
