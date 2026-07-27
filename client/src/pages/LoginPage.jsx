@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import "../components/css/Button.css"
+import sharedApi from "../api";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -21,15 +22,7 @@ function LoginPage() {
   // Handle login
   async function handleLogin(userId, password, errorMessage) {
     try {
-      const response = await fetch("http://127.0.0.1:5000/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ userId, password })
-      });
-
-      const result = await response.json();
+      const result = await sharedApi("/login", "POST", { userId, password });
 
       if (result.success) {
         navigate("/main-page", { state: { userId: userId } });
