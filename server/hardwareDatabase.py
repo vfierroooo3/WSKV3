@@ -30,20 +30,33 @@ def createHardwareSet(client, hwSetName, initCapacity):
 # Function to query a hardware set by its name
 def queryHardwareSet(client, hwSetName):
     # Query and return a hardware set from the database
-    pass
+    db = client.WSKV3
+    collection = db.HardwareSets
+    return collection.find_one({"hwName": hwSetName})
 
 # Function to update the availability of a hardware set
 def updateAvailability(client, hwSetName, newAvailability):
     # Update the availability of an existing hardware set
-    pass
+    db = client.WSKV3
+    collection = db.HardwareSets
+    result = collection.update_one(
+         {"hwName": hwSetName},
+         {"$set": {"availability": newAvailability}}
+    )
+    return result.modified_count > 0  # Return True if the update was successful, False otherwise
 
 # Function to request space from a hardware set
 def requestSpace(client, hwSetName, amount):
     # Request a certain amount of hardware and update availability
-    pass
+    db = client.WSKV3
+    collection = db.HardwareSets
+    hardware_set = collection.find_one({"hwName": hwSetName})
+    return hardware_set and hardware_set['availability'] >= amount
 
 # Function to get all hardware set names
 def getAllHwNames(client):
     # Get and return a list of all hardware set names
-    pass
+    db = client.WSKV3
+    collection = db.HardwareSets
+    return [hw['hwName'] for hw in collection.find({}, {"_id": 0, "hwName": 1})]
 
