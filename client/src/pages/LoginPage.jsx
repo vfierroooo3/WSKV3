@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import "../components/css/Button.css"
-import sharedApi from "../api";
+import sharedApi from "../components/api/api";
 
 function LoginPage() {
   const navigate = useNavigate();
