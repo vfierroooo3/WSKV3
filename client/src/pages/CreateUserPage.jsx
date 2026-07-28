@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import "../components/css/Button.css"
+import sharedApi from "../components/api/api";
 
 function CreateUserPage() {
     
@@ -25,15 +26,22 @@ function CreateUserPage() {
     }
 
     // Handle user creation
-    function handleCreateUser(userId, newPassword, errorMessage) {
+    async function handleCreateUser(userId, newPassword, errorMessage) {
         // Call backend API to create user
-        let successfulCreation = true; // Simulate API call
-        if(successfulCreation){
-            alert("User created successfully！");
-            navigate("/");
-        }else{
-            errorMessage.innerText = "User creation failed！";
-        }
+        try {
+      const result = await sharedApi("/add_user", "POST", { userId, password: newPassword });
+
+      if (result.success) {
+        alert("User created successfully! Please log in.");
+        navigate("/");
+      } else {
+        errorMessage.innerText = result.message;
+      }
+    } 
+        catch (error) {
+      console.error("Error during user creation:", error);
+      errorMessage.innerText = "An error occurred during user creation. Please try again.";
+    }
     }
     
     return (
