@@ -27,7 +27,7 @@ function LoginPage() {
       if (result.success) {
         localStorage.setItem("isLogin", "true");
         localStorage.setItem("userId", userId);
-        navigate("/main-page", { state: { userId: userId } });
+        navigate("/main-page");
       } else {
         errorMessage.innerText = result.message;
       }

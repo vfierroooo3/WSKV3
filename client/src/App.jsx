@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-
 import LoginPage from "./pages/LoginPage.jsx";
 import MainPage from "./pages/MainPage.jsx";
 import CreateUserPage from "./pages/CreateUserPage.jsx";
@@ -14,11 +13,11 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* 不需要登入 */}
+        {/* not needs login */}
         <Route path="/" element={<LoginPage />} />
         <Route path="/create-user" element={<CreateUserPage />} />
 
-        {/* 需要登入 */}
+        {/* needs login */}
         <Route element={<ProtectedRoute />}>
           <Route path="/main-page" element={<MainPage />} />
           <Route path="/create-project" element={<CreateProjectPage />} />
