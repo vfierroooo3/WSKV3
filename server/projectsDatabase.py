@@ -67,7 +67,8 @@ def addUser(client, projectId, userId):
             {"$push": {"users": userId}}
     )
     return {"success":True,
-            "message":"User successfully added to project"}
+            "message":"User successfully added to project",
+            "projectId":projectId}
 
 # Function to update hardware usage in a project 
 def updateUsage(client, projectId, hwSetName):
