@@ -25,6 +25,8 @@ function LoginPage() {
       const result = await sharedApi("/login", "POST", { userId, password });
 
       if (result.success) {
+        localStorage.setItem("isLogin", "true");
+        localStorage.setItem("userId", userId);
         navigate("/main-page", { state: { userId: userId } });
       } else {
         errorMessage.innerText = result.message;
@@ -33,7 +35,7 @@ function LoginPage() {
       console.error("Error during login:", error);
       errorMessage.innerText = "An error occurred during login. Please try again.";
     }
-    }
+  }
   return (
     <main style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "24px"}}>
       <h1>Login</h1>
