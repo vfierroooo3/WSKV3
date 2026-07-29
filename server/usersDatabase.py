@@ -57,7 +57,7 @@ def login(client, userId, password):
 
     # Check that the password matches
     if existing_user['password'] == password:
-        return {'success':True,'message':'Login successful'}
+        return {'success':True,'message':'Login successful','userId':userId}
     else:
         return {'success': False, 'message': 'Invalid UserId or Password'}
 
@@ -96,7 +96,9 @@ def joinProject(client, userId, projectId):
 
 
     return {"success":True,
-                "message":"User successfully added to project"}
+                "message":"User successfully added to project",
+                "userId":userId,
+                "projectId":projectId}
 
 
 
@@ -112,5 +114,6 @@ def getUserProjectsList(client, userId):
 
     # Access and return user's projects
     return {"success":True,
+            "message": "User projects retrieved",
             "projects":user.get("projects",[])}
 
