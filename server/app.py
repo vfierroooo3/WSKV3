@@ -27,38 +27,27 @@ def login():
     result = usersDatabase.login(client,data['userId'],data['password'])
     # Close the MongoDB connection
     client.close()
-    # Return a JSON response
+
+    # Return a JSON response {success, message, userId on successful login}
     return jsonify(result)
 
-# Route for the main page (Work in progress)
-@app.route('/main')
-def mainPage():
-    # Extract data from request
 
-    # Connect to MongoDB
-
-    # Fetch user projects using the usersDB module
-
-    # Close the MongoDB connection
-
-    # Return a JSON response
-    return jsonify({})
-
-# Route for joining a project
+# Route for joining an existing project
 @app.route('/join_project', methods=['POST'])
 def join_project():
     # Extract data from request
-
+    data = request.get_json()
     # Connect to MongoDB
-
+    client = MongoClient(MONGODB_SERVER)
     # Attempt to join the project using the usersDB module
-
+    result = usersDatabase.joinProject(client,data['userId'],data['projectId'])
     # Close the MongoDB connection
+    client.close()
 
-    # Return a JSON response
-    return jsonify({})
+    # Return a JSON response {success, message,userId, projectId}
+    return jsonify(result)
 
-# Route for adding a new user
+# Route for creating a new user
 @app.route('/add_user', methods=['POST'])
 def add_user():
     # Extract data from request
@@ -69,50 +58,66 @@ def add_user():
     result = usersDatabase.addUser(client,data['userId'],data['password'])
     # Close the MongoDB connection
     client.close()
-    # Return a JSON response
+
+    # Return a JSON response {success, message, insertedId}
     return jsonify(result)
 
-# Route for getting the list of user projects
+# Route for getting the list of a user's projects
 @app.route('/get_user_projects_list', methods=['POST'])
 def get_user_projects_list():
     # Extract data from request
-
+    data = request.get_json()
     # Connect to MongoDB
-
+    client = MongoClient(MONGODB_SERVER)
     # Fetch the user's projects using the usersDB module
-
+    result = usersDatabase.getUserProjectsList(client,data['userId'])
     # Close the MongoDB connection
+    client.close()
 
-    # Return a JSON response
-    return jsonify({})
+    # Return a JSON response {success, message, projects}
+    return jsonify(result)
+
 
 # Route for creating a new project
 @app.route('/create_project', methods=['POST'])
 def create_project():
-    # Extract data from request
+    # Extract Data from Request
+    data = request.get_json()
+    # Connect to database
+    client = MongoClient(MONGODB_SERVER)
 
-    # Connect to MongoDB
+    # Create the project document itself 
+    result = projectsDatabase.createProject(
+            client, data['projectName'],
+            data['projectId'], data['description']
+    )
 
-    # Attempt to create the project using the projectsDB module
-
+    # If creation worked, add creator to project (join project)
+    if result['success']:
+        result = usersDatabase.joinProject(
+            client, data['userId'], data['projectId']
+        )
     # Close the MongoDB connection
+    client.close()
 
-    # Return a JSON response
-    return jsonify({})
+    # Return a JSON response: {success, message, userId, projectId}
+    return jsonify(result)
 
-# Route for getting project information
+# Route for getting project information (query)
 @app.route('/get_project_info', methods=['POST'])
 def get_project_info():
     # Extract data from request
-
+    data = request.get_json()
     # Connect to MongoDB
-
+    client = MongoClient(MONGODB_SERVER)
     # Fetch project information using the projectsDB module
-
+    result = projectsDatabase.queryProject(client,data['projectId'])
     # Close the MongoDB connection
+    client.close()
 
-    # Return a JSON response
-    return jsonify({})
+    # Return a JSON response {project object}
+        # (object should include projectName, projectId,description, hwSets,users)
+    return jsonify(result)
 
 # Route for getting all hardware names
 @app.route('/get_all_hw_names', methods=['POST'])
