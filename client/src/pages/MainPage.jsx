@@ -1,21 +1,13 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
 import MainLayout from "../components/layout/MainLayout.jsx";
 import MyProjectTable from "../components/table/MyProjectTable.jsx";
 import NavigateButton from "../components/button/NavigateButton.jsx"
 
 function MainPage() {
-  const navigate = useNavigate();
+  const userId = localStorage.getItem("userId");
 
-  // Get user ID from location state
-  const location = useLocation();
-  const userId = location.state?.userId;
-  
   // State to hold project lists
   const [myProjectsList, setMyProjectsList] = useState([]);
-
-  // State to hold other projects
-  const [otherProjectsList, setOtherProjectsList] = useState([]);
 
   // Get my projects List
   function getMyProjects(userId){
@@ -38,32 +30,9 @@ function MainPage() {
     setMyProjectsList(result);
   }
 
-  // Get other projects List
-  function getOtherProjects(userId){
-    const result = [
-      {
-        id: 4,
-        name: "Project Delta",
-        join: false
-      },
-      {
-        id: 5,
-        name: "Project Epsilon",
-        join: true
-      },
-      {
-        id: 6,
-        name: "Project Zeta",
-        join: true
-      },
-    ];
-    setOtherProjectsList(result);
-  }
-
   // Execute when component rendering
   useEffect(() => {
     getMyProjects(userId);
-    getOtherProjects(userId);
   }, [userId]);
 
   return (
