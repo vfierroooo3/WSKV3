@@ -121,8 +121,6 @@ def joinProject(client, userId, projectId):
         "projectId":projectId
     }
 
-
-
 # Function to get the list of projects for a user
 def getUserProjectsList(client, userId):
     # Get and return the list of projects a user is part of

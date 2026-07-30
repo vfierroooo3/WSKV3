@@ -26,7 +26,7 @@ def queryProject(client, projectId):
 # Function to create a new project
 def createProject(client, projectName, projectId, description):
     # Check if project already exists
-    project =queryProject(client,projectId)
+    project = queryProject(client,projectId)
     if project:
         return {
             "success":False,
@@ -60,8 +60,10 @@ def addUser(client, projectId, userId):
     # Check if the project exists
     project =queryProject(client,projectId)
     if not project:
-            return {"success":False,
-                    'message':"Project does not exist"}
+        return {
+            "success":False,
+            'message':"Project does not exist"
+        }
 
     # Prevent same user from being added twice
     if userId in project.get("users",[]):
