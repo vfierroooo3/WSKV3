@@ -20,39 +20,31 @@ def queryProject(client, projectId):
 
     # Query and return a project from the database
     projects = databaseHelpers.access_collection(client,"Projects")
-
     return projects.find_one({"projectId":projectId})
 
 # Function to create a new project
 def createProject(client, projectName, projectId, description):
     # Check if project already exists
-    project = queryProject(client,projectId)
+    project =queryProject(client,projectId)
     if project:
-        return {
-            "success":False,
-            'message':"ProjectId already in use"
-        }
+        return {"success":False,
+                'message':"ProjectId already in use"}
 
     # create new project
     project_doc = {
         'projectName': projectName,
-        'projectId': projectId,
-        'description': description,
-        'hwSets': {
-            "Jet": 0, 
-            "Helicopter": 0
-        }, 
-        'users': []
-    }
+            'projectId': projectId,
+            'description': description,
+            'hwSets': {"Jet": 0, "Helicopter": 0}, 
+            'users': []
+            }
 
     # access and add to projects
     projects = databaseHelpers.access_collection(client,"Projects")
     projects.insert_one(project_doc)
-    return {
-        "success":True,
-        "message":"Project Created",
-        "projectId":projectId 
-    }
+    return {"success":True,
+            "message":"Project Created",
+             "projectId":projectId }
 
 # Function to add a user to a project
 def addUser(client, projectId, userId):
@@ -60,29 +52,23 @@ def addUser(client, projectId, userId):
     # Check if the project exists
     project =queryProject(client,projectId)
     if not project:
-        return {
-            "success":False,
-            'message':"Project does not exist"
-        }
+            return {"success":False,
+                    'message':"Project does not exist"}
 
     # Prevent same user from being added twice
     if userId in project.get("users",[]):
-        return {
-            "success":False,
-            "message":"User is already a member of the project"
-        }
+        return ({"success":False,
+                  "message":"User is already a member of the project"})
     projects = databaseHelpers.access_collection(client,"Projects")
 
     # append user to project
     projects.update_one(
-        {"projectId": projectId},
-        {"$push": {"users": userId}}
+            {"projectId": projectId},
+            {"$push": {"users": userId}}
     )
-    return {
-        "success":True,
-        "message":"User successfully added to project",
-        "projectId":projectId
-    }
+    return {"success":True,
+            "message":"User successfully added to project",
+            "projectId":projectId}
 
 # Function to update hardware usage in a project 
 def updateUsage(client, projectId, hwSetName):
@@ -100,14 +86,12 @@ def updateUsage(client, projectId, hwSetName):
     projects = databaseHelpers.access_collection(client,"Projects")
     projects.update_one(
         {"projectId":projectId},
+
         # adds in new hw set type to project with starting value of zero
         {"$set": {f"hwSets.{hwSetName}": 0}}
+
     )
-    return {
-        "success": True, 
-        "message": "New hardware set added to project"
-    }
-    #TO DO: Add error checks to ensure project exists, hardware set is not already in project
+    return {"success": True, "message": "New hardware set added to project"}
 
 # Function to check out hardware for a project
 def checkOutHW(client, projectId, hwSetName, qty):

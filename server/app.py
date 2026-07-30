@@ -88,18 +88,14 @@ def create_project():
 
     # Create the project document itself 
     result = projectsDatabase.createProject(
-        client, 
-        data['projectName'],
-        data['projectId'], 
-        data['description']
+            client, data['projectName'],
+            data['projectId'], data['description']
     )
 
     # If creation worked, add creator to project (join project)
     if result['success']:
         result = usersDatabase.joinProject(
-            client, 
-            data['userId'], 
-            data['projectId']
+            client, data['userId'], data['projectId']
         )
     # Close the MongoDB connection
     client.close()
