@@ -116,9 +116,7 @@ def joinProject(client, userId, projectId):
 
     return {
         "success":True,
-        "message":"User successfully added to project",
-        "userId":userId,
-        "projectId":projectId
+        "message":"User successfully added to project"
     }
 
 # Function to get the list of projects for a user

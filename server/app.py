@@ -44,7 +44,7 @@ def join_project():
     # Close the MongoDB connection
     client.close()
 
-    # Return a JSON response {success, message,userId, projectId}
+    # Return a JSON response {success, message}
     return jsonify(result)
 
 # Route for creating a new user
@@ -104,7 +104,7 @@ def create_project():
     # Close the MongoDB connection
     client.close()
 
-    # Return a JSON response: {success, message, userId, projectId}
+    # Return a JSON response: {success, message}
     return jsonify(result)
 
 # Route for getting project information (query)

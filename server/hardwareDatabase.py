@@ -15,23 +15,26 @@ HardwareSet = {
 # Function to create a new hardware set
 def createHardwareSet(client, hwSetName, initCapacity):
     # Create a new hardware set in the database
-
     collection = databaseHelpers.access_collection(client, "HardwareSets")
+
+    # Check if hardware set already exists
+    existing = collection.find_one({"hwName": hwSetName})
+    if existing:
+        return {"success": False, "message": "Hardware set already exists"}
 
     hardwareSet = {
         "hwName": hwSetName,
-        "capacity":initCapacity,
-        "availability":initCapacity
+        "capacity": initCapacity,
+        "availability": initCapacity
     }
 
     result = collection.insert_one(hardwareSet)
-    return result.inserted_id
+    return {"success": True, "message": "Hardware set created", "insertedId": str(result.inserted_id)}
 
 # Function to query a hardware set by its name
 def queryHardwareSet(client, hwSetName):
     # Query and return a hardware set from the database
     collection = databaseHelpers.access_collection(client, "HardwareSets")
-
     return collection.find_one({"hwName": hwSetName})
 
 # Function to update the availability of a hardware set
@@ -42,20 +45,29 @@ def updateAvailability(client, hwSetName, newAvailability):
         {"hwName": hwSetName},
         {"$set": {"availability": newAvailability}}
     )
-    return result.modified_count > 0  # Return True if the update was successful, False otherwise
+    if result.modified_count > 0:
+        return {"success": True, "message": "Availability updated"}
+    else:
+        return {"success": False, "message": "Update failed"}
 
 # Function to request space from a hardware set
 def requestSpace(client, hwSetName, amount):
     # Request a certain amount of hardware and update availability
     collection = databaseHelpers.access_collection(client, "HardwareSets")
     hardware_set = collection.find_one({"hwName": hwSetName})
-    if not hardware_set or hardware_set ['availability'] < amount:
-        return False # Not enough availability or hardware set does not exist
+    if not hardware_set:
+        return {"success": False, "message": "Invalid hardware"}
+    if hardware_set['availability'] < amount:
+        return {"success": False, "message": "Not enough availability"}
+
     result = collection.update_one(
         {"hwName": hwSetName},
         {"$inc": {"availability": -amount}}
     )
-    return result.modified_count > 0  # Return True if the update was successful, False otherwise
+    if result.modified_count > 0:
+        return {"success": True, "message": "Hardware successfully checked out"}
+    else:
+        return {"success": False, "message": "Check out failed"}
 
 # Function to get all hardware set names
 def getAllHwNames(client):
@@ -65,17 +77,18 @@ def getAllHwNames(client):
 
 # Function to return hardware to a hardware set
 def returnSpace(client, hwSetName, amount):
-# Return a certain amount of hardware and update availability
+    # Return a certain amount of hardware and update availability
     collection = databaseHelpers.access_collection(client, "HardwareSets")
     hardware_set = collection.find_one({"hwName": hwSetName})
     if not hardware_set:
-         return {"success":False,"message":"Invalid hardware"} # Hardware set does not exist
+        return {"success": False, "message": "Invalid hardware"}  # Hardware set does not exist
+
     result = collection.update_one(
-         {"hwName": hwSetName},
-         {"$inc": {"availability": amount}}
+        {"hwName": hwSetName},
+        {"$inc": {"availability": amount}}
     )
 
     if result.modified_count > 0:
-        return {"success":True, "message":"Check In Complete"}  # Return True if the update was successful, False otherwise
+        return {"success": True, "message": "Check In Complete"}
     else:
-         return {"success":False, "message":"Check in Failed "}  # Return True if the update was successful, False otherwise
+        return {"success": False, "message": "Check In Failed"}
