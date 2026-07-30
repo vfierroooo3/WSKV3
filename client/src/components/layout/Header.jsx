@@ -2,6 +2,11 @@ import { Link } from "react-router-dom";
 
 function Header() {
 
+  function handleLogout() {
+    localStorage.removeItem("isLogin");
+    localStorage.removeItem("userId");
+  }
+  
   return (
     <header
       style={{
@@ -18,7 +23,9 @@ function Header() {
       <div style={{display: "flex", gap: "16px"}}>
         <Link to="/main-page">Projects</Link>
 
-        <Link to="/">Log out</Link>
+        <Link to="/" onClick={handleLogout}>
+          Log out
+        </Link>
       </div>
     </header>
   );
