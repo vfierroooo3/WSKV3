@@ -2,9 +2,11 @@ import { useNavigate } from "react-router-dom";
 import "../components/css/Button.css"
 import MainLayout from "../components/layout/MainLayout.jsx";
 import sharedApi from "../components/api/api";
+import { useState } from "react";
 
 function JoinProjectPage() {
   const navigate = useNavigate();
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Create Project
   async function handleNewProject(event) {
@@ -18,11 +20,11 @@ function JoinProjectPage() {
       if (result.success) {
         navigate(`/main-page`);
       }else{
-        document.getElementById("error-message").innerText = result.message;
+        setErrorMessage(result.message);
       }
     } catch (error) {
       console.error("Error during project join:", error);
-      document.getElementById("error-message").innerText = "An error occurred during project join. Please try again.";
+      setErrorMessage("An error occurred during project join. Please try again.");
     }
 }
 
@@ -35,7 +37,7 @@ function JoinProjectPage() {
             <input type="text" id="projectId" name="projectId" style={{width: "300px"}}/>
             <button type="submit" className="custom-button">Join Project</button>
         </form>
-        <span id="error-message" style={{ color: "red" }}></span>
+        <span style={{ color: "red" }}>{errorMessage}</span>
       </div>
     </MainLayout>
   );
