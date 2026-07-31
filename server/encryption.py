@@ -27,22 +27,3 @@ def encrypt(inputText,N,D):
         encrypted_string += chr(shifted_pos+32)
 
     return encrypted_string
-
-
-def decrypt(encrypted_string,N,D):
-
-    original_string=''
-
-    # work through backwards
-    for i in range(len(encrypted_string)-1,-1,-1):
-
-        # access ch
-        ch = encrypted_string[i]
-
-        # get 0 based position, undo shift, cycle as needed, and add back 32
-        end_pos = ((ord(ch) -32 - (D*N)) % 95 )+ 32
-
-        original_string+=chr(end_pos)
-
-    return original_string
-
