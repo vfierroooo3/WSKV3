@@ -3,6 +3,7 @@ from pymongo import MongoClient
 
 import projectsDatabase
 import databaseHelpers
+import encryption
 
 '''
 Structure of User entry:
@@ -12,6 +13,7 @@ User = {
     'projects': [project1_ID, project2_ID, ...]
 }
 '''
+
 
 # Function to add a new user
 def addUser(client, userId, password):
@@ -24,10 +26,12 @@ def addUser(client, userId, password):
             "message": 'UserId already taken'
         }
 
+    # encrypt password
+    encrypted_password = encryption.encrypt(password,23,-1)
     # Add a new user to the database (add a new user document)
     user_doc ={
         'userId': userId,
-        'password':password,
+        'password':encrypted_password,
         'projects': []
     }
 
@@ -63,7 +67,7 @@ def login(client, userId, password):
         }
 
     # Check that the password matches
-    if existing_user['password'] == password:
+    if existing_user['password'] == encryption.encrypt(password,23,-1):
         return {
             "success":True,
             "message":"Login successful"
