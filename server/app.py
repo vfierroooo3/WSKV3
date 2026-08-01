@@ -115,93 +115,92 @@ def get_project_info():
     # Connect to MongoDB
     client = MongoClient(MONGODB_SERVER)
     # Fetch project information using the projectsDB module
-    result = projectsDatabase.queryProject(client,data['projectId'])
+    result = projectsDatabase.getProjectInfo(client, data['projectId'])
     # Close the MongoDB connection
     client.close()
 
-    # Return a JSON response {project object}
-        # (object should include projectName, projectId,description, hwSets,users)
+    # Return a JSON response {success, project} (whole project object)
     return jsonify(result)
 
 # Route for getting all hardware names
 @app.route('/get_all_hw_names', methods=['POST'])
 def get_all_hw_names():
     # Connect to MongoDB
-
+    client = MongoClient(MONGODB_SERVER)
     # Fetch all hardware names using the hardwareDB module
-
+    result = hardwareDatabase.getAllHwNames(client)
     # Close the MongoDB connection
-
+    client.close()
     # Return a JSON response
-    return jsonify({})
+    return jsonify({"hwNames": result})
 
 # Route for getting hardware information
 @app.route('/get_hw_info', methods=['POST'])
 def get_hw_info():
     # Extract data from request
-
+    # We don't need to extract any data since the function grabs everything
     # Connect to MongoDB
-
+    client = MongoClient(MONGODB_SERVER)
     # Fetch hardware set information using the hardwareDB module
-
+    result = hardwareDatabase.getAllHardwareSets(client)
     # Close the MongoDB connection
-
+    client.close()
     # Return a JSON response
-    return jsonify({})
+    return jsonify({"HardwareSets": result})
 
 # Route for checking out hardware
 @app.route('/check_out', methods=['POST'])
 def check_out():
     # Extract data from request
-
+    data = request.get_json()
     # Connect to MongoDB
-
+    client = MongoClient(MONGODB_SERVER)
     # Attempt to check out the hardware using the projectsDB module
-
+    result = projectsDatabase.checkOutHW(client,data['projectId'],data['hwSetName'],data['qty'])
     # Close the MongoDB connection
-
+    client.close()
     # Return a JSON response
-    return jsonify({})
+    return jsonify(result)
 
 # Route for checking in hardware
 @app.route('/check_in', methods=['POST'])
 def check_in():
     # Extract data from request
-
+    data = request.get_json()
     # Connect to MongoDB
-
+    client = MongoClient(MONGODB_SERVER)
     # Attempt to check in the hardware using the projectsDB module
-
+    result = projectsDatabase.checkInHW(client,data['projectId'],data['hwSetName'],data['qty'])
     # Close the MongoDB connection
-
+    client.close()
     # Return a JSON response
-    return jsonify({})
+    return jsonify(result)
 
 # Route for creating a new hardware set
 @app.route('/create_hardware_set', methods=['POST'])
 def create_hardware_set():
     # Extract data from request
-
+    data = request.get_json()
     # Connect to MongoDB
-
+    client = MongoClient(MONGODB_SERVER)
     # Attempt to create the hardware set using the hardwareDB module
-
+    result = hardwareDatabase.createHardwareSet(client, data['hwSetName'], data['initCapacity'])
     # Close the MongoDB connection
-
+    client.close()
     # Return a JSON response
-    return jsonify({})
+    return jsonify(result)
 
 # Route for checking the inventory of projects
 @app.route('/api/inventory', methods=['GET'])
 def check_inventory():
     # Connect to MongoDB
-
+    client = MongoClient(MONGODB_SERVER)
     # Fetch all projects from the HardwareCheckout.Projects collection
-
+    result = projectsDatabase.getAllProjects(client)
     # Close the MongoDB connection
-
+    client.close()
     # Return a JSON response
-    return jsonify({})
+    return jsonify(result)
 
 # Main entry point for the application
 if __name__ == '__main__':

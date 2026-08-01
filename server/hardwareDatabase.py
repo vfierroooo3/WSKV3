@@ -92,3 +92,10 @@ def returnSpace(client, hwSetName, amount):
         return {"success": True, "message": "Check In Complete"}
     else:
         return {"success": False, "message": "Check In Failed"}
+
+#Function for getting hardware information
+def getAllHardwareSets(client):
+    # Get and return full details for all hardware sets
+    collection = databaseHelpers.access_collection(client, "HardwareSets")
+    return list(collection.find({}, {"_id": 0}))
+

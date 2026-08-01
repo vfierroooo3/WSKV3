@@ -1,24 +1,30 @@
 import { useNavigate } from "react-router-dom";
 import "../components/css/Button.css"
 import MainLayout from "../components/layout/MainLayout.jsx";
-import {useState} from "react";
+import { useState } from "react";
+import sharedApi from "../components/api/api.js";
 
 function CreateProjectPage() {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState("");
   // Create Project
-  function handleNewProject(event) {
+  async function handleNewProject(event) {
     event.preventDefault();
     const formData = new FormData(event.target);
     const projectData = Object.fromEntries(formData);
     // Call API
-    const successfulCreation = true; // Simulate API call
-    if (successfulCreation) {
-      navigate(`/main-page`);
-    }else{
-       setErrorMessage("Failed to create project.");
+     try{
+      const result = await sharedApi("/create_project", "POST", {userId: localStorage.getItem("userId"),projectId: projectData.projectId, projectName: projectData.projectName, description: projectData.projectDescription});
+      if (result.success) {
+        navigate(`/main-page`);
+      } else{
+        setErrorMessage(result.message);
+      }
+     } catch (error) {
+        setErrorMessage("An error occurred while creating the project.");
+      }
     }
-  }
+
 
   return (
     <MainLayout>
