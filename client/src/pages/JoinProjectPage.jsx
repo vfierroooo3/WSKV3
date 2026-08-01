@@ -1,23 +1,32 @@
 import { useNavigate } from "react-router-dom";
 import "../components/css/Button.css"
 import MainLayout from "../components/layout/MainLayout.jsx";
+import sharedApi from "../components/api/api";
+import { useState } from "react";
 
 function JoinProjectPage() {
   const navigate = useNavigate();
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Create Project
-  function handleNewProject(event) {
+  async function handleNewProject(event) {
     event.preventDefault();
     const formData = new FormData(event.target);
     const projectData = Object.fromEntries(formData);
     // Call API
-    const successfulCreation = true; // Simulate API call
-    if (successfulCreation) {
-      navigate(`/main-page`);
-    }else{
-      document.getElementById("error-message").innerText = "ID is not correct!";
+    
+    try {
+      const result = await sharedApi("/join_project", "POST", {userId: localStorage.getItem("userId"), projectId: projectData.projectId});
+      if (result.success) {
+        navigate(`/main-page`);
+      }else{
+        setErrorMessage(result.message);
+      }
+    } catch (error) {
+      console.error("Error during project join:", error);
+      setErrorMessage("An error occurred during project join. Please try again.");
     }
-  }
+}
 
   return (
     <MainLayout>
@@ -28,7 +37,7 @@ function JoinProjectPage() {
             <input type="text" id="projectId" name="projectId" style={{width: "300px"}}/>
             <button type="submit" className="custom-button">Join Project</button>
         </form>
-        <span id="error-message" style={{ color: "red" }}></span>
+        <span style={{ color: "red" }}>{errorMessage}</span>
       </div>
     </MainLayout>
   );
