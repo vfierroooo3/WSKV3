@@ -98,4 +98,4 @@ def returnSpace(client, hwSetName, amount):
         # Get and return full details for all hardware sets
         collection = databaseHelpers.access_collection(client, "HardwareSets")
         return list(collection.find({}, {"_id": 0}))
-    
+

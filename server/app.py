@@ -175,33 +175,33 @@ def check_in():
     # Close the MongoDB connection
     client.close()
     # Return a JSON response
-    return jsonify({result})
+    return jsonify(result)
 
 # Route for creating a new hardware set
 @app.route('/create_hardware_set', methods=['POST'])
 def create_hardware_set():
     # Extract data from request
-
+    data = request.get_json()
     # Connect to MongoDB
-
+    client = MongoClient(MONGODB_SERVER)
     # Attempt to create the hardware set using the hardwareDB module
-
+    result = hardwareDatabase.createHardwareSet(client, data['hwSetName'], data['initCapacity'])
     # Close the MongoDB connection
-
+    client.close()
     # Return a JSON response
-    return jsonify({})
+    return jsonify(result)
 
 # Route for checking the inventory of projects
 @app.route('/api/inventory', methods=['GET'])
 def check_inventory():
     # Connect to MongoDB
-
+    client = MongoClient(MONGODB_SERVER)
     # Fetch all projects from the HardwareCheckout.Projects collection
-
+    result = projectsDatabase.getAllProjects(client)
     # Close the MongoDB connection
-
+    client.close()
     # Return a JSON response
-    return jsonify({})
+    return jsonify(result)
 
 # Main entry point for the application
 if __name__ == '__main__':

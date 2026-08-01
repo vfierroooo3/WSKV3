@@ -167,3 +167,8 @@ def checkInHW(client, projectId, hwSetName, qty):
     )
 
     return {"success": True, "message": "Hardware successfully checked in"}
+
+def getAllProjects(client):
+    # Get and return a list of all projects
+    collection = databaseHelpers.access_collection(client, "Projects")
+    return list(collection.find({}, {"_id": 0}))
