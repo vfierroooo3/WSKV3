@@ -14,11 +14,18 @@ Project = {
 }
 '''
 
-# Function to query a project by its ID
+# Function to query a project by its ID (helper function)
 def queryProject(client, projectId):
     # Query and return a project from the database
     projects = databaseHelpers.access_collection(client, "Projects")
-    return projects.find_one({"projectId": projectId})
+    return projects.find_one({"projectId": projectId}, {"_id": 0})
+
+# Function for the /get_project_info route specifically (because need success messages for api)
+def getProjectInfo(client, projectId):
+    project = queryProject(client, projectId)
+    if not project:
+        return {"success": False, "message": "Project not found"}
+    return {"success": True, "project": project}
 
 # Function to create a new project
 def createProject(client, projectName, projectId, description):

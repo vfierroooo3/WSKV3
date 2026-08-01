@@ -115,12 +115,11 @@ def get_project_info():
     # Connect to MongoDB
     client = MongoClient(MONGODB_SERVER)
     # Fetch project information using the projectsDB module
-    result = projectsDatabase.queryProject(client,data['projectId'])
+    result = projectsDatabase.getProjectInfo(client, data['projectId'])
     # Close the MongoDB connection
     client.close()
 
-    # Return a JSON response {project object}
-        # (object should include projectName, projectId,description, hwSets,users)
+    # Return a JSON response {success, project} (whole project object)
     return jsonify(result)
 
 # Route for getting all hardware names
@@ -157,7 +156,7 @@ def check_out():
     # Connect to MongoDB
     client = MongoClient(MONGODB_SERVER)
     # Attempt to check out the hardware using the projectsDB module
-    result =hardwareDatabase.requestSpace(client, data['hwSetName'], data['amount'])
+    result = projectsDatabase.checkOutHW(client,data['projectId'],data['hwSetName'],data['qty'])
     # Close the MongoDB connection
     client.close()
     # Return a JSON response
@@ -171,7 +170,7 @@ def check_in():
     # Connect to MongoDB
     client = MongoClient(MONGODB_SERVER)
     # Attempt to check in the hardware using the projectsDB module
-    result = hardwareDatabase.returnSpace(client, data['hwSetName'], data['amount'])
+    result = projectsDatabase.checkInHW(client,data['projectId'],data['hwSetName'],data['qty'])
     # Close the MongoDB connection
     client.close()
     # Return a JSON response
