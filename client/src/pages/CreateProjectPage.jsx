@@ -1,10 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import "../components/css/Button.css"
 import MainLayout from "../components/layout/MainLayout.jsx";
+import {useState} from "react";
 
 function CreateProjectPage() {
   const navigate = useNavigate();
-
+  const [errorMessage, setErrorMessage] = useState("");
   // Create Project
   function handleNewProject(event) {
     event.preventDefault();
@@ -15,7 +16,7 @@ function CreateProjectPage() {
     if (successfulCreation) {
       navigate(`/main-page`);
     }else{
-      document.getElementById("error-message").innerText = "Failed to create project.";
+       setErrorMessage("Failed to create project.");
     }
   }
 
@@ -41,7 +42,8 @@ function CreateProjectPage() {
           </div>
           <button type="submit" className="custom-button">Create Project</button>
         </form>
-        <span id="error-message" style={{ color: "red" }}></span>
+      <span style={{ color: "red" }}>{errorMessage}</span>
+
       </div>
     </MainLayout>
   );

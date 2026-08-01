@@ -1,26 +1,27 @@
 import { useNavigate } from "react-router-dom";
 import "../components/css/Button.css"
 import sharedApi from "../components/api/api";
+import {useState} from "react";
 
 function LoginPage() {
   const navigate = useNavigate();
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Check login credentials
   function checkLogin() {
     const userId = document.getElementById("userId").value;
     const password = document.getElementById("password").value;
-    const errorMessage = document.getElementById("errorMessage");
     
     if (!userId || !password) {
-      errorMessage.innerText = "Please fill in all fields!";
+      setErrorMessage("Please fill in all fields!");
       return;
     }
 
-    handleLogin(userId, password, errorMessage);
+    handleLogin(userId, password);
   }
 
   // Handle login
-  async function handleLogin(userId, password, errorMessage) {
+  async function handleLogin(userId, password) {
     try {
       const result = await sharedApi("/login", "POST", { userId, password });
 
@@ -29,11 +30,11 @@ function LoginPage() {
         localStorage.setItem("userId", userId);
         navigate("/main-page");
       } else {
-        errorMessage.innerText = result.message;
+        setErrorMessage(result.message);
       }
     } catch (error) {
       console.error("Error during login:", error);
-      errorMessage.innerText = "An error occurred during login. Please try again.";
+      setErrorMessage("An error occurred during login. Please try again.");
     }
   }
   return (
@@ -48,7 +49,7 @@ function LoginPage() {
             Password: <input type="password" id="password" placeholder="Please Enter Password" />
           </div>
 
-          <span style={{ color: "red" }} id="errorMessage"></span>
+          <span style={{ color: "red" }}>{errorMessage}</span>
 
           <button type="button" onClick={checkLogin} className="custom-button">
             Login
