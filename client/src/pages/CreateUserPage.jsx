@@ -1,32 +1,33 @@
 import { useNavigate } from "react-router-dom";
 import "../components/css/Button.css"
 import sharedApi from "../components/api/api";
+import {useState} from "react";
 
 function CreateUserPage() {
     
     const navigate = useNavigate();
+    const [errorMessage, setErrorMessage] = useState("");
 
     // Check password validity
     function checkPassword(){
         const userId = document.getElementById("user-id").value;
         const newPassword = document.getElementById("new-password").value;
         const confirmPassword = document.getElementById("confirm-password").value;
-        const errorMessage = document.getElementById("error-message");
         
         if(!userId || !newPassword || !confirmPassword){
-            errorMessage.innerText = "Please fill in all fields ！";
+            setErrorMessage("Please fill in all fields ！");
             return;
         }
 
         if(newPassword !== confirmPassword){
-            errorMessage.innerText = "Passwords do not match ！";
+            setErrorMessage("Passwords do not match ！");
             return;
         }
-        handleCreateUser(userId, newPassword, errorMessage);
+        handleCreateUser(userId, newPassword);
     }
 
     // Handle user creation
-    async function handleCreateUser(userId, newPassword, errorMessage) {
+    async function handleCreateUser(userId, newPassword) {
         // Call backend API to create user
         try {
       const result = await sharedApi("/add_user", "POST", { userId, password: newPassword });
@@ -35,12 +36,12 @@ function CreateUserPage() {
         alert("User created successfully! Please log in.");
         navigate("/");
       } else {
-        errorMessage.innerText = result.message;
+        setErrorMessage(result.message);
       }
     } 
         catch (error) {
       console.error("Error during user creation:", error);
-      errorMessage.innerText = "An error occurred during user creation. Please try again.";
+      setErrorMessage("An error occurred during user creation. Please try again.");
     }
     }
     
@@ -60,7 +61,7 @@ function CreateUserPage() {
                     Confirm Password: <input type="password" id="confirm-password" placeholder="Please Confirm Password" />
                 </div>
 
-                <span style={{ color: "red" }} id="error-message"></span>
+                <span style={{ color: "red" }}>{errorMessage}</span>
 
                 <button type="button" onClick={checkPassword} className="custom-button">
                     Create User
