@@ -30,19 +30,18 @@ function CreateUserPage() {
     async function handleCreateUser(userId, newPassword) {
         // Call backend API to create user
         try {
-      const result = await sharedApi("/add_user", "POST", { userId, password: newPassword });
+            const result = await sharedApi("/add_user", "POST", { userId, password: newPassword });
 
-      if (result.success) {
-        alert("User created successfully! Please log in.");
-        navigate("/");
-      } else {
-        setErrorMessage(result.message);
-      }
-    } 
-        catch (error) {
-      console.error("Error during user creation:", error);
-      setErrorMessage("An error occurred during user creation. Please try again.");
-    }
+            if (result.success) {
+                alert("User created successfully! Please log in.");
+                navigate("/");
+            } else {
+                setErrorMessage(result.message);
+            }
+        } catch (error) {
+            console.error("Error during user creation:", error);
+            setErrorMessage("An error occurred during user creation. Please try again.");
+        }
     }
     
     return (

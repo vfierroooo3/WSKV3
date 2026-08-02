@@ -13,11 +13,18 @@ function JoinProjectPage() {
     event.preventDefault();
     const formData = new FormData(event.target);
     const projectData = Object.fromEntries(formData);
-    // Call API
-    
+
     try {
-      const result = await sharedApi("/join_project", "POST", {userId: localStorage.getItem("userId"), projectId: projectData.projectId});
+      const result = await sharedApi(
+        "/join_project", 
+        "POST", 
+        {
+          userId: localStorage.getItem("userId"), 
+          projectId: projectData.projectId
+        }
+      );
       if (result.success) {
+        alert("Successfully joined the project!");
         navigate(`/main-page`);
       }else{
         setErrorMessage(result.message);
