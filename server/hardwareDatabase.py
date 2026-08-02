@@ -78,23 +78,23 @@ def getAllHardwareSets():
     collection = databaseHelpers.access_collection("HardwareSets")
     return list(collection.find({}, {"_id": 0}))
 
-# Not Used functions:
-
 # Function to create a new hardware set
-# def createHardwareSet(hwSetName, initCapacity):
-#     # Create a new hardware set in the database
-#     collection = databaseHelpers.access_collection("HardwareSets")
+def createHardwareSet(hwSetName, initCapacity):
+    # Create a new hardware set in the database
+    collection = databaseHelpers.access_collection("HardwareSets")
 
-#     # Check if hardware set already exists
-#     existing = collection.find_one({"hwName": hwSetName})
-#     if existing:
-#         return {"success": False, "message": "Hardware set already exists"}
+    # Check if hardware set already exists
+    existing = collection.find_one({"hwName": hwSetName})
+    if existing:
+        return {"success": False, "message": "Hardware set already exists"}
 
-#     hardwareSet = {
-#         "hwName": hwSetName,
-#         "capacity": initCapacity,
-#         "availability": initCapacity
-#     }
+    hardwareSet = {
+        "hwName": hwSetName,
+        "capacity": initCapacity,
+        "availability": initCapacity
+    }
+
+# Not Used functions:
 
 #     result = collection.insert_one(hardwareSet)
 #     return {
