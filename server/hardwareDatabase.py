@@ -72,6 +72,12 @@ def returnSpace(hwSetName, amount):
             "message": "Check In Failed"
         }
 
+#Function for getting hardware information
+def getAllHardwareSets():
+    # Get and return full details for all hardware sets
+    collection = databaseHelpers.access_collection("HardwareSets")
+    return list(collection.find({}, {"_id": 0}))
+
 # Not Used functions:
 
 # Function to create a new hardware set
@@ -131,10 +137,3 @@ def returnSpace(hwSetName, amount):
 #     collection = databaseHelpers.access_collection("HardwareSets")
 
 #     return collection.find_one({"hwName": hwSetName})
-
-#Function for getting hardware information
-# def getAllHardwareSets():
-#     # Get and return full details for all hardware sets
-#     collection = databaseHelpers.access_collection("HardwareSets")
-#     return list(collection.find({}, {"_id": 0}))
-
