@@ -5,25 +5,26 @@ function CheckInTable({hardwaresList, onDataChange}) {
   const [requests, setRequests] = useState({});
 
   // Handle request change
-  function handleRequestChange(hardware, value) {
+  function handleRequestChange(hardwareName, value) {
     const quantity = Number(value); // Convert input value to number
 
     // Update requests state
     const updatedRequests = {
       ...requests, // Keep existing requests
-      [hardware.id]: quantity, // Update quantity for the specific hardware
+      [hardwareName]: quantity, // Update quantity for the specific hardware
     };
 
     // update requests parameter
     setRequests(updatedRequests);
 
     // Update selected items (only with a request quantity)
-    const selectedItems = hardwaresList
-      .map((item) => ({
-        ...item,
-        requestQuantity: updatedRequests[item.id] ?? 0,
-      }))
-      .filter((item) => item.requestQuantity > 0);
+    const selectedItems = Object.entries(hardwaresList)
+    .map(([name, checkedOut]) => ({
+      hwName: name,
+      checkedOut: checkedOut,
+      requestQuantity: updatedRequests[name] ?? 0,
+    }))
+    .filter((item) => item.requestQuantity > 0);
 
     onDataChange(selectedItems);
   }
@@ -39,20 +40,27 @@ function CheckInTable({hardwaresList, onDataChange}) {
         </thead>
 
         <tbody>
-          {hardwaresList.map((hardware) => (
-            <tr key={hardware.name}>
-              <td className="check-table-cell">{hardware.name}</td>
+          {Object.entries(hardwaresList).map(([hardwareName, checkedOut]) => (
+            <tr key={hardwareName}>
               <td className="check-table-cell">
-                {hardware.checkedOut.toLocaleString()}
+                {hardwareName}
               </td>
+
+              <td className="check-table-cell">
+                {checkedOut.toLocaleString()}
+              </td>
+
               <td className="check-table-cell">
                 <input
                   type="number"
                   min="0"
-                  max={hardware.checkedOut}
-                  value={requests[hardware.id]}
+                  max={checkedOut}
+                  value={requests[hardwareName] ?? ""}
                   onChange={(event) =>
-                    handleRequestChange(hardware, event.target.value)
+                    handleRequestChange(
+                      hardwareName,
+                      event.target.value
+                    )
                   }
                   style={{ width: "100%" }}
                 />

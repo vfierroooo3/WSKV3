@@ -1,9 +1,7 @@
-import { useNavigate } from "react-router-dom";
-import NavigateButton from "../button/NavigateButton";
 import "../css/Table.css";
-function ProjectTable({ projects }) {
-  const navigate = useNavigate();
+import NavigateButton from "../button/NavigateButton";
 
+function ProjectTable({ projects }) {
   return (
     <div style={{ width: "100%", maxWidth: "900px", overflowX: "auto" }}>
       <table className="project-table">
@@ -16,12 +14,16 @@ function ProjectTable({ projects }) {
         </thead>
 
         <tbody>
-          {projects.map((project) => (
-            <tr key={project.id}>
-              <td className="project-table-cell">{project.id}</td>
-              <td className="project-table-cell">{project.name}</td>
+          {projects.length === 0 ? (
+            <tr>
+              <td colSpan="3" className="project-table-cell">No projects available.</td>
+            </tr>
+          ) : projects.map((project) => (
+            <tr key={projects.projectId}>
+              <td className="project-table-cell">{project.projectId}</td>
+              <td className="project-table-cell">{project.projectName}</td>
               <td className="project-table-cell" style={{ display: "flex", alignItems: "center" }}>
-                <NavigateButton text="View" destination="/view-project" data={{ projectId: project.id }}/>
+                <NavigateButton text="View" destination="/view-project" data={{ projectId: project.projectId }}/>
               </td>
             </tr>
           ))}
