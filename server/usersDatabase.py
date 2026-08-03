@@ -1,6 +1,3 @@
-# Import necessary libraries and modules
-from pymongo import MongoClient
-
 import projectsDatabase
 import databaseHelpers
 import encryption
@@ -14,12 +11,10 @@ User = {
 }
 '''
 
-
 # Function to add a new user
-def addUser(client, userId, password):
-
+def addUser(userId, password):
     # Does a user with this userId already exist?
-    existing_user = __queryUser(client, userId)
+    existing_user = __queryUser(userId)
     if existing_user:
         return {
             "success": False, 
@@ -36,7 +31,7 @@ def addUser(client, userId, password):
     }
 
     # Insert new user 
-    users = databaseHelpers.access_collection(client, "Users")
+    users = databaseHelpers.access_collection("Users")
     users.insert_one(user_doc)
 
     return {
@@ -45,21 +40,21 @@ def addUser(client, userId, password):
     }
 
 # Helper function to query a user by userId
-def __queryUser(client, userId):
+def __queryUser(userId):
     # Query and return a user from the database
 
     # Access database and users collection
-    users = databaseHelpers.access_collection(client,"Users")
+    users = databaseHelpers.access_collection("Users")
 
     # find a user
     return users.find_one({"userId":userId})
 
 # Function to log in a user
-def login(client, userId, password):
+def login(userId, password):
     # Authenticate a user and return login status
 
     # Check that a user exists
-    existing_user = __queryUser(client,userId)
+    existing_user = __queryUser(userId)
     if not existing_user:
         return {
             "success": False, 
@@ -79,12 +74,12 @@ def login(client, userId, password):
         }
 
 # Function to add a project to a user
-def joinProject(client, userId, projectId):
+def joinProject(userId, projectId):
     # Add a user to a project by first adding the project information to the user document
     # Then add the user to the project's document by calling it from the module
 
     # Check if the project exists
-    project =projectsDatabase.queryProject(client,projectId)
+    project =projectsDatabase.queryProject(projectId)
     if not project:
         return {
             "success":False,
@@ -92,7 +87,7 @@ def joinProject(client, userId, projectId):
         }
 
     # Check if the user exists
-    user = __queryUser(client,userId)
+    user = __queryUser(userId)
     if not user:
         return {
             "success":False,
@@ -106,7 +101,7 @@ def joinProject(client, userId, projectId):
             "message":"User is already a member of the project"
         }
     
-    users = databaseHelpers.access_collection(client,"Users")
+    users = databaseHelpers.access_collection("Users")
 
     # Append project to user
     users.update_one(
@@ -115,8 +110,7 @@ def joinProject(client, userId, projectId):
     )
 
     # Call the project function to add this user to that project's information
-    projectsDatabase.addUser(client, projectId, userId)
-
+    projectsDatabase.addUser(projectId, userId)
 
     return {
         "success":True,
@@ -124,9 +118,9 @@ def joinProject(client, userId, projectId):
     }
 
 # Function to get the list of projects for a user
-def getUserProjectsList(client, userId):
+def getUserProjectsList(userId):
     # Get and return the list of projects a user is part of
-    user = __queryUser(client,userId)
+    user = __queryUser(userId)
 
     # Check if user exists
     if not user:
@@ -134,11 +128,21 @@ def getUserProjectsList(client, userId):
             "success":False, 
             "message":'User does not exist'
         }
+    
+    projectIds = user.get("projects", [])
+    projects = []
+    for projectId in projectIds:
+        project = projectsDatabase.queryProject(projectId)
 
-    # Access and return user's projects
+        if project:
+            projects.append({
+                "projectId": projectId,
+                "projectName": project.get("projectName", "")
+            })
+            
     return {
         "success":True,
         "message": "User projects retrieved",
-        "projects":user.get("projects",[])
+        "projects": projects
     }
 

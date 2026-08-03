@@ -1,6 +1,13 @@
-from pymongo import MongoClient
-import databaseHelpers
+import os
 import hardwareDatabase
+from dotenv import load_dotenv
+from pymongo import MongoClient
+
+# Load environment variables from .env file
+load_dotenv() 
+
+# Get MongoDB server address from environment variable
+MONGODB_SERVER = os.getenv("MONGODB_SERVER")
 
 # Initial Hardware to be added to the database
 INITIAL_HARDWARE = [
@@ -8,13 +15,15 @@ INITIAL_HARDWARE = [
     {"hwName": "Helicopter", "capacity": 800},
 ]
 
-
 def seed(client):
     for hw in INITIAL_HARDWARE:
-        result = hardwareDatabase.createHardwareSet(client,hw["hwName"],hw["capacity"])
+        result = hardwareDatabase.createHardwareSet(
+            client,hw["hwName"],
+            hw["capacity"]
+        )
         print(result["message"],hw["hwName"])
 
 if __name__ == "__main__":
-    client = MongoClient("mongodb+srv://katierafdahl_db_user:45sfmVPrbATWYm3t@wskv3.zcpyq8u.mongodb.net/?appName=WSKV3")
+    client = MongoClient(MONGODB_SERVER)
     seed(client)
     

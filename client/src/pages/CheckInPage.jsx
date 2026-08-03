@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { useLocation } from "react-router-dom";
 import "../components/css/Button.css"
 import MainLayout from "../components/layout/MainLayout.jsx";
 import CheckInTable from "../components/table/CheckInTable.jsx";
+import sharedApi from "../components/api/api.jsx";
 
 function CheckInPage() {
   // Get project ID from location state
@@ -10,44 +11,70 @@ function CheckInPage() {
   const projectId = location.state?.projectId;
   const projectName = location.state?.projectName;
 
-  // List of hardwares parameter
+  // Project info parameters
   const [hardwaresList, setHardwaresList] = useState([]);
-
+  
   // List of checked-in items parameter
   const [checkInItems, setCheckInItems] = useState([]);
 
-  // Fetch checked-in items from API
-  function getCheckedInItems(projectId) {
-    // Simulate API call
-    const result = [
-      {
-        id: 1,
-        name: "ABC",
-        checkedOut: 1200
-      },
-      {
-        id: 2,
-        name: "DEF",
-        checkedOut: 850
-      }
-    ];
-    setHardwaresList(result);
-  }
+  // reset trigger parameter to reset the table after check-in
+  const [resetTrigger, setResetTrigger] = useState(0);
 
+  const [errorMessage, setErrorMessage] = useState("");
+  
   // Handle table data change
   function handleTableChange(items) {
     setCheckInItems(items);
   }
 
-  // Handle check-in form submission
-  function handleCheckIn(event) {
-    event.preventDefault();
-    // call API to check in items
+  // Get my projects List
+  async function getProjectsInfo(projectId){
+    try {
+      const result = await sharedApi("/get_project_info", "POST", { projectId });
+      if (result.success) {
+        setHardwaresList(result.project.hwSets);
+      }
+    } catch (error) {
+      console.error("Error during get project info:", error);
+    }
   }
 
-  // Execute when component rendering
+  // Handle check-in form submission
+  async function handleCheckIn(event) {
+    event.preventDefault();
+    try {
+      const results = await Promise.all(
+        checkInItems.map((item) =>
+          sharedApi(
+            "/check_in",
+            "POST",
+            {
+              projectId: projectId,
+              hwSetName: item.hwName,
+              qty: item.requestQuantity
+            }
+          )
+        )
+      );
+
+      const hasFailed = results.some((result) => !result.success);
+
+      if (hasFailed) {
+        setErrorMessage("Some items failed to check in.");
+      } else {
+        alert("All items checked out successfully!");
+        setCheckInItems([]);
+        setResetTrigger(prev => prev + 1); // Trigger a reset for the table
+        getProjectsInfo(projectId); // Refresh the hardware list after check-in
+      }
+
+    } catch (error) {
+      setErrorMessage("An error occurred while checking in the items.");
+    }
+  }
+
   useEffect(() => {
-    getCheckedInItems(projectId);
+    getProjectsInfo(projectId);
   }, [projectId]);
 
   return (
@@ -60,7 +87,9 @@ function CheckInPage() {
           <CheckInTable
             hardwaresList={hardwaresList} // List of hardwares
             onDataChange={handleTableChange} // Handle table data change
+            resetTrigger={resetTrigger}
           />
+          <span style={{ color: "red" }}>{errorMessage}</span>
           <button type="submit" className="custom-button">Check In</button>
         </form>
       </div>

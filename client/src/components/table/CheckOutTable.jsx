@@ -1,17 +1,28 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "../css/Table.css";
-function CheckOutTable({hardwaresList, onDataChange}) {
+function CheckOutTable({hardwaresList, onDataChange, resetTrigger}) {
   // Request quantities parameter
   const [requests, setRequests] = useState({});
 
+  // Reset requests state when resetTrigger changes
+  useEffect(() => {
+    const resetRequests = {};
+
+    Object.keys(hardwaresList).forEach((hardwareName) => {
+      resetRequests[hardwareName] = 0;
+    });
+
+    setRequests(resetRequests);
+  }, [resetTrigger]);
+
   // Handle request quantity change
-  function handleRequestChange(hardwareId, value) {
+  function handleRequestChange(hardwareNm, value) {
     const quantity = Number(value); // Convert input value to number
     
     // Update the requests state with the new quantity for the specific hardware
     const updatedRequests = {
       ...requests, // previous requests
-      [hardwareId]: quantity, // current hardware request
+      [hardwareNm]: quantity, // current hardware request
     };
 
     setRequests(updatedRequests); // Update the state to requests parameter
@@ -20,7 +31,7 @@ function CheckOutTable({hardwaresList, onDataChange}) {
     const selectedItems = hardwaresList
       .map((item) => ({
         ...item,
-        requestQuantity: updatedRequests[item.id] ?? 0,
+        requestQuantity: updatedRequests[item.hwName] ?? 0,
       }))
       .filter((item) => item.requestQuantity > 0);
 
@@ -40,20 +51,20 @@ function CheckOutTable({hardwaresList, onDataChange}) {
 
         <tbody>
           {hardwaresList.map((hardware) => (
-            <tr key={hardware.name}>
-              <td className="check-table-cell">{hardware.name}</td>
+            <tr key={hardware.hwName}>
+              <td className="check-table-cell">{hardware.hwName}</td>
               <td className="check-table-cell">
                 {hardware.capacity.toLocaleString()}
               </td>
-              <td className="check-table-cell">{hardware.available.toLocaleString()}</td>
+              <td className="check-table-cell">{hardware.availability.toLocaleString()}</td>
               <td className="check-table-cell">
                 <input
                   type="number"
                   min="0"
-                  max={hardware.available}
-                  value={requests[hardware.id] ?? ""}
+                  max={hardware.availability}
+                  value={requests[hardware.hwName] ?? ""}
                   onChange={(event) =>
-                    handleRequestChange(hardware.id, event.target.value)
+                    handleRequestChange(hardware.hwName, event.target.value)
                   }
                   style={{ width: "100%" }}
                 />

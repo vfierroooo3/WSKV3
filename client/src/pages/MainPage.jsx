@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import MainLayout from "../components/layout/MainLayout.jsx";
 import MyProjectTable from "../components/table/MyProjectTable.jsx";
-import NavigateButton from "../components/button/NavigateButton.jsx"
+import NavigateButton from "../components/button/NavigateButton.jsx";
+import sharedApi from "../components/api/api";
 
 function MainPage() {
   const userId = localStorage.getItem("userId");
@@ -10,24 +11,18 @@ function MainPage() {
   const [myProjectsList, setMyProjectsList] = useState([]);
 
   // Get my projects List
-  function getMyProjects(userId){
-    // Simulate API call
-    const result = [
-        {
-        id: 1,
-        name: "Project Alpha"
-      },
-      {
-        id: 2,
-        name: "Project Beta"
-      },
-      {
-        id: 3,
-        name: "Project Gamma"
-      },
-    ];
-    // put the result into state
-    setMyProjectsList(result);
+  async function getMyProjects(userId){
+    try {
+      const result = await sharedApi("/get_user_projects_list", "POST", { userId });
+      if (result.success) {
+        setMyProjectsList(result.projects);
+      } else {
+        setErrorMessage(result.message);
+      }
+    } catch (error) {
+      console.error("Error during get my projects:", error);
+      setErrorMessage("An error from server occurred.");
+    }
   }
 
   // Execute when component rendering

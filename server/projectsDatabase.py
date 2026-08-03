@@ -1,5 +1,3 @@
-# Import necessary libraries and modules
-from pymongo import MongoClient
 import hardwareDatabase
 import databaseHelpers
 
@@ -15,22 +13,29 @@ Project = {
 '''
 
 # Function to query a project by its ID (helper function)
-def queryProject(client, projectId):
+def queryProject(projectId):
     # Query and return a project from the database
-    projects = databaseHelpers.access_collection(client, "Projects")
+    projects = databaseHelpers.access_collection("Projects")
+    
     return projects.find_one({"projectId": projectId}, {"_id": 0})
 
 # Function for the /get_project_info route specifically (because need success messages for api)
-def getProjectInfo(client, projectId):
-    project = queryProject(client, projectId)
-    if not project:
-        return {"success": False, "message": "Project not found"}
-    return {"success": True, "project": project}
+def getProjectInfo(projectId):
+    projectInfo = queryProject(projectId)
+    if not projectInfo:
+        return {
+            "success": False, 
+            "message": "Project not found"
+        }
+    return {
+        "success": True, 
+        "project": projectInfo
+    }
 
 # Function to create a new project
-def createProject(client, projectName, projectId, description):
+def createProject(projectName, projectId, description):
     # Check if project already exists
-    project = queryProject(client, projectId)
+    project = queryProject(projectId)
     if project:
         return {
             "success": False,
@@ -50,7 +55,7 @@ def createProject(client, projectName, projectId, description):
     }
 
     # access and add to projects
-    projects = databaseHelpers.access_collection(client, "Projects")
+    projects = databaseHelpers.access_collection("Projects")
     projects.insert_one(project_doc)
     return {
         "success": True,
@@ -58,9 +63,9 @@ def createProject(client, projectName, projectId, description):
     }
 
 # Function to add a user to a project
-def addUser(client, projectId, userId):
+def addUser(projectId, userId):
     # Check if the project exists
-    project = queryProject(client, projectId)
+    project = queryProject(projectId)
     if not project:
         return {
             "success": False,
@@ -74,7 +79,7 @@ def addUser(client, projectId, userId):
             "message": "User is already a member of the project"
         }
 
-    projects = databaseHelpers.access_collection(client, "Projects")
+    projects = databaseHelpers.access_collection("Projects")
     # append user to project
     projects.update_one(
         {"projectId": projectId},
@@ -85,89 +90,94 @@ def addUser(client, projectId, userId):
         "message": "User successfully added to project"
     }
 
-# Function to update hardware usage in a project
-def updateUsage(client, projectId, hwSetName):
-    # Used to add a new type of hardware set (beyond our two) to project if needed in future
-
-    # Check that project exists
-    project = queryProject(client, projectId)
-    if not project:
-        return {"success": False, "message": "Invalid ProjectId"}
-
-    # Check that hardware is not already associated with it
-    if hwSetName in project.get("hwSets", {}):
-        return {"success": False, "message": "Hardware already associated with project"}
-
-    projects = databaseHelpers.access_collection(client, "Projects")
-    projects.update_one(
-        {"projectId": projectId},
-        # adds in new hw set type to project with starting value of zero
-        {"$set": {f"hwSets.{hwSetName}": 0}}
-    )
-    return {
-        "success": True,
-        "message": "New hardware set added to project"
-    }
-    # TO DO: Add error checks to ensure project exists, hardware set is not already in project
 
 # Function to check out hardware for a project
-def checkOutHW(client, projectId, hwSetName, qty):
+def checkOutHW(projectId, hwSetName, qty):
     # Check out hardware for the specified project and update availability
     if qty <= 0:
-        return {"success": False, "message": "Quantity must be positive"}
+        return {
+            "success": False, 
+            "message": "Quantity must be positive"
+        }
 
     # Check that project exists and hardware is associated with it
-    project = queryProject(client, projectId)
+    project = queryProject(projectId)
+
     if not project:
-        return {"success": False, "message": "Invalid ProjectId"}
+        return {
+            "success": False, 
+            "message": "Invalid ProjectId"
+        }
 
     if hwSetName not in project['hwSets']:
-        return {"success": False, "message": "Hardware not associated with project"}
+        return {
+            "success": False, 
+            "message": "Hardware not associated with project"
+        }
 
     # Call hardware db to request space and update on hardware side
     # this checks that hardware exists and that there is enough available
-    result = hardwareDatabase.requestSpace(client, hwSetName, qty)
+    result = hardwareDatabase.requestSpace(hwSetName, qty)
 
     # if hardware call unsuccessful, return false + its error
     if not result['success']:
         return result
 
     # Update project info
-    projects = databaseHelpers.access_collection(client, "Projects")
+    projects = databaseHelpers.access_collection("Projects")
+
     projects.update_one(
         {"projectId": projectId},
         {"$inc": {f"hwSets.{hwSetName}": qty}}
     )
 
-    return {"success": True, "message": "Hardware successfully checked out"}
+    return {
+        "success": True, 
+        "message": "Hardware successfully checked out"
+    }
 
 # Function to check in hardware for a project
-def checkInHW(client, projectId, hwSetName, qty):
+def checkInHW(projectId, hwSetName, qty):
     # Check in hardware for the specified project and update availability
 
     # Ensure positive quantity
     if qty <= 0:
-        return {"success": False, "message": "Quantity must be positive"}
+        return {
+            "success": False, 
+            "message": "Quantity must be positive"
+        }
 
     # Check that project exists and that the hardware set is associated with it
-    project = queryProject(client, projectId)
+    project = queryProject(projectId)
+
     if not project:
-        return {"success": False, "message": "Invalid ProjectId"}
+        return {
+            "success": False, 
+            "message": "Invalid ProjectId"
+        }
 
     if hwSetName not in project['hwSets']:
-        return {"success": False, "message": "Hardware not checked out"}
+        return {
+            "success": False, 
+            "message": "Hardware not checked out"
+        }
 
     # Make sure they are not trying to check in more than they have checked out
     if qty > project['hwSets'][hwSetName]:
-        return {"success": False, "message": "Cannot return more than checked out"}
+        return {
+            "success": False, 
+            "message": "Cannot return more than checked out"
+        }
 
     # Call hardware db to return items and update on hardware side
-    result = hardwareDatabase.returnSpace(client, hwSetName, qty)
+    result = hardwareDatabase.returnSpace(hwSetName, qty)
+
     if not result["success"]:
         return result
 
     # Update quantity in project
-    projects = databaseHelpers.access_collection(client, "Projects")
+    projects = databaseHelpers.access_collection("Projects")
+
     projects.update_one(
         {"projectId": projectId},
         {"$inc": {f"hwSets.{hwSetName}": -qty}}
@@ -175,7 +185,39 @@ def checkInHW(client, projectId, hwSetName, qty):
 
     return {"success": True, "message": "Hardware successfully checked in"}
 
-def getAllProjects(client):
-    # Get and return a list of all projects
-    collection = databaseHelpers.access_collection(client, "Projects")
-    return list(collection.find({}, {"_id": 0}))
+# Not Used functions:
+
+# Function to update hardware usage in a project
+# def updateUsage(projectId, hwSetName):
+#     # Used to add a new type of hardware set (beyond our two) to project if needed in future
+
+#     # Check that project exists
+#     project = queryProject(projectId)
+#     if not project:
+#         return {
+#             "success": False, 
+#             "message": "Invalid ProjectId"
+#         }
+
+#     # Check that hardware is not already associated with it
+#     if hwSetName in project.get("hwSets", {}):
+#         return {
+#             "success": False, 
+#             "message": "Hardware already associated with project"
+#         }
+
+#     projects = databaseHelpers.access_collection("Projects")
+#     projects.update_one(
+#         {"projectId": projectId},
+#         {"$set": {f"hwSets.{hwSetName}": 0}}
+#     )
+#     return {
+#         "success": True,
+#         "message": "New hardware set added to project"
+#     }
+#     # TODO: Add error checks to ensure project exists, hardware set is not already in project
+
+# def getAllProjects():
+#     # Get and return a list of all projects
+#     collection = databaseHelpers.access_collection("Projects")
+#     return list(collection.find({}, {"_id": 0}))

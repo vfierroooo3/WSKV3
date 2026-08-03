@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import "../components/css/Button.css"
 import MainLayout from "../components/layout/MainLayout.jsx";
 import { useState } from "react";
-import sharedApi from "../components/api/api.js";
+import sharedApi from "../components/api/api.jsx";
 
 function CreateProjectPage() {
   const navigate = useNavigate();
@@ -12,18 +12,31 @@ function CreateProjectPage() {
     event.preventDefault();
     const formData = new FormData(event.target);
     const projectData = Object.fromEntries(formData);
+    if(!projectData.projectId || !projectData.projectName || !projectData.projectDescription){
+      setErrorMessage("Please fill in all fields!");
+      return;
+    }
     // Call API
-     try{
-      const result = await sharedApi("/create_project", "POST", {userId: localStorage.getItem("userId"),projectId: projectData.projectId, projectName: projectData.projectName, description: projectData.projectDescription});
+    try{
+      const result = await sharedApi(
+        "/create_project", 
+        "POST", 
+        {
+          userId: localStorage.getItem("userId"),
+          projectId: projectData.projectId, 
+          projectName: projectData.projectName, 
+          description: projectData.projectDescription
+        }
+      );
       if (result.success) {
         navigate(`/main-page`);
       } else{
         setErrorMessage(result.message);
       }
-     } catch (error) {
-        setErrorMessage("An error occurred while creating the project.");
-      }
+    } catch (error) {
+      setErrorMessage("An error occurred while creating the project.");
     }
+  }
 
 
   return (
@@ -48,8 +61,7 @@ function CreateProjectPage() {
           </div>
           <button type="submit" className="custom-button">Create Project</button>
         </form>
-      <span style={{ color: "red" }}>{errorMessage}</span>
-
+        <span style={{ color: "red" }}>{errorMessage}</span>
       </div>
     </MainLayout>
   );
