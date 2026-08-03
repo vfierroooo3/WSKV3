@@ -1,8 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "../css/Table.css";
-function CheckOutTable({hardwaresList, onDataChange}) {
+function CheckOutTable({hardwaresList, onDataChange, resetTrigger}) {
   // Request quantities parameter
   const [requests, setRequests] = useState({});
+
+  // Reset requests state when resetTrigger changes
+  useEffect(() => {
+    const resetRequests = {};
+
+    Object.keys(hardwaresList).forEach((hardwareName) => {
+      resetRequests[hardwareName] = 0;
+    });
+
+    setRequests(resetRequests);
+  }, [resetTrigger]);
 
   // Handle request quantity change
   function handleRequestChange(hardwareNm, value) {

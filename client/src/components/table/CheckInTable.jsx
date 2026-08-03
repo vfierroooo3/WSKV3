@@ -1,8 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "../css/Table.css";
-function CheckInTable({hardwaresList, onDataChange}) {
+function CheckInTable({hardwaresList, onDataChange, resetTrigger}) {
   // List of requests parameter
   const [requests, setRequests] = useState({});
+
+  // Reset requests state when resetTrigger changes
+  useEffect(() => {
+    const resetRequests = {};
+
+    Object.keys(hardwaresList).forEach((hardwareName) => {
+      resetRequests[hardwareName] = 0;
+    });
+
+    setRequests(resetRequests);
+  }, [resetTrigger]);
 
   // Handle request change
   function handleRequestChange(hardwareName, value) {

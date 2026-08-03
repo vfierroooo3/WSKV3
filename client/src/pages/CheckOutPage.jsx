@@ -17,6 +17,9 @@ function CheckOutPage() {
   // Check out items parameters
   const [checkOutItems, setCheckOutItems] = useState([]);
 
+    // reset trigger parameter to reset the table after check-in
+  const [resetTrigger, setResetTrigger] = useState(0);
+
   const [errorMessage, setErrorMessage] = useState("");
   // Get hardware list from API
   async function getHardwareList() {
@@ -60,6 +63,8 @@ function CheckOutPage() {
         setErrorMessage("Some items failed to check out.");
       } else {
         alert("All items checked out successfully!");
+        setCheckOutItems([]);
+        setResetTrigger(prev => prev + 1); // Trigger a reset for the table
         getHardwareList();
       }
 
@@ -83,6 +88,7 @@ function CheckOutPage() {
           <CheckOutTable
             hardwaresList={hardwaresList} // Pass hardware list to table
             onDataChange={handleTableChange} // Handle data change from table
+            resetTrigger={resetTrigger}
           />
           <span style={{ color: "red" }}>{errorMessage}</span>
           <button type="submit" className="custom-button">Check Out</button>

@@ -17,6 +17,11 @@ function CheckInPage() {
   // List of checked-in items parameter
   const [checkInItems, setCheckInItems] = useState([]);
 
+  // reset trigger parameter to reset the table after check-in
+  const [resetTrigger, setResetTrigger] = useState(0);
+
+  const [errorMessage, setErrorMessage] = useState("");
+  
   // Handle table data change
   function handleTableChange(items) {
     setCheckInItems(items);
@@ -58,6 +63,8 @@ function CheckInPage() {
         setErrorMessage("Some items failed to check in.");
       } else {
         alert("All items checked out successfully!");
+        setCheckInItems([]);
+        setResetTrigger(prev => prev + 1); // Trigger a reset for the table
         getProjectsInfo(projectId); // Refresh the hardware list after check-in
       }
 
@@ -80,7 +87,9 @@ function CheckInPage() {
           <CheckInTable
             hardwaresList={hardwaresList} // List of hardwares
             onDataChange={handleTableChange} // Handle table data change
+            resetTrigger={resetTrigger}
           />
+          <span style={{ color: "red" }}>{errorMessage}</span>
           <button type="submit" className="custom-button">Check In</button>
         </form>
       </div>
