@@ -29,7 +29,7 @@ function CreateProjectPage() {
         }
       );
       if (result.success) {
-        navigate(`/main-page`);
+        navigate(`/view-project`, { state: { projectId: projectData.projectId } });
       } else{
         setErrorMessage(result.message);
       }
