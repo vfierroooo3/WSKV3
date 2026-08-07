@@ -1,8 +1,12 @@
+import os
+from dotenv import load_dotenv
 from pymongo import MongoClient
 
+# Load environment variables from .env file
+load_dotenv() 
+
 # Get MongoDB server address from environment variable
-# Define the MongoDB connection string
-MONGODB_SERVER = "mongodb+srv://katierafdahl_db_user:45sfmVPrbATWYm3t@wskv3.zcpyq8u.mongodb.net/?appName=WSKV3"
+MONGODB_SERVER = os.getenv("MONGODB_SERVER")
 
 # Connect to MongoDB
 client = MongoClient(MONGODB_SERVER)
