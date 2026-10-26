@@ -1,23 +1,77 @@
-from database import db
+from database import project_db
 from fastapi import FastAPI, Request
 from pymongo import MongoClient
-from schemas import ProjectCreate
+from schemas import ProjectCreate, ProjectAction
 from fastapi.responses import JSONResponse
 from pymongo.errors import PyMongoError
+from fastapi import HTTPException
 
 app = FastAPI()
 
-projects_collection = db["projects"]
+projects_collection = project_db["projects"]
+projects_collection.create_index(
+    [("projectId", 1), ("creatorId", 1)],
+    unique=True
+)
 
-@app.post("/projects", status_code=201)
+@app.post("/create_project")
 def create_project(project: ProjectCreate):
-    projects_collection.insert_one(project.model_dump())
+    project_data = project.model_dump()
+    project_data["joined_users"] = []
+
+    projects_collection.insert_one(project_data)
 
     return {
         "success": True,
         "errorMessage": ""
     }
 
+@app.post("/join_project")
+def join_project(project: ProjectAction):
+    result = projects_collection.update_one(
+        {
+            "projectId": project.projectId,
+            "creatorId": project.projectCreatorId
+        },
+        {"$addToSet": {"joined_users": project.userId}}
+    )
+
+    check_update_result(result, "User already joined this project")
+
+    return {
+        "success": True,
+        "errorMessage": ""
+    }
+
+@app.post("/leave_project")
+def leave_project(project: ProjectAction):
+    result = projects_collection.update_one(
+        {
+            "projectId": project.projectId,
+            "creatorId": project.projectCreatorId
+        },
+        {"$pull": {"joined_users": project.userId}}
+    )
+    check_update_result(result, "User is not a member of this project")    
+
+    return {
+        "success": True,
+        "errorMessage": ""
+    }
+
+def check_update_result(result, error_message):
+    if result.matched_count == 0:
+        raise HTTPException(
+            status_code=404,
+            detail="Project not found"
+        )
+
+    if result.modified_count == 0:
+        raise HTTPException(
+            status_code=409,
+            detail=error_message
+        )
+    
 # Error Handler
 @app.exception_handler(PyMongoError)
 async def mongodb_exception_handler(
