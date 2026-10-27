@@ -1,7 +1,7 @@
 from database import project_db
 from fastapi import FastAPI, Request
 from pymongo import MongoClient
-from schemas import ProjectCreate, ProjectAction
+from schemas import ProjectCreate, ProjectAction, ProjectSearch
 from fastapi.responses import JSONResponse
 from pymongo.errors import PyMongoError
 from fastapi import HTTPException
@@ -14,7 +14,7 @@ projects_collection.create_index(
     unique=True
 )
 
-@app.post("/create_project")
+@app.post("/projects/create_project")
 def create_project(project: ProjectCreate):
     project_data = project.model_dump()
     project_data["joined_users"] = []
@@ -26,7 +26,7 @@ def create_project(project: ProjectCreate):
         "errorMessage": ""
     }
 
-@app.post("/join_project")
+@app.post("/projects/join_project")
 def join_project(project: ProjectAction):
     result = projects_collection.update_one(
         {
@@ -43,7 +43,7 @@ def join_project(project: ProjectAction):
         "errorMessage": ""
     }
 
-@app.post("/leave_project")
+@app.post("/projects/leave_project")
 def leave_project(project: ProjectAction):
     result = projects_collection.update_one(
         {
@@ -57,6 +57,30 @@ def leave_project(project: ProjectAction):
     return {
         "success": True,
         "errorMessage": ""
+    }
+
+@app.post("/projects/search")
+def search_projects(search: ProjectSearch):
+    filters = {
+        key: value.strip()
+        for key, value in search.model_dump().items()
+        if value is not None and value.strip() != ""
+    }
+
+    projects = list(
+        projects_collection.find(
+            filters,
+            {
+                "_id": 0,
+                "projectId": 1,
+                "projectName": 1,
+                "projectCreatorId": 1
+            }
+        )
+    )
+
+    return {
+        "projects": projects
     }
 
 def check_update_result(result, error_message):
