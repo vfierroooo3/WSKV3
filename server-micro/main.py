@@ -1,10 +1,8 @@
 from database import project_db
-from fastapi import FastAPI, Request
-from pymongo import MongoClient
-from schemas import ProjectCreate, ProjectAction, ProjectSearch
-from fastapi.responses import JSONResponse
 from pymongo.errors import PyMongoError
-from fastapi import HTTPException
+from fastapi.responses import JSONResponse
+from fastapi import FastAPI, Request, HTTPException
+from schemas import ProjectCreate, ProjectAction, ProjectSearch
 
 app = FastAPI()
 
@@ -59,7 +57,7 @@ def leave_project(project: ProjectAction):
         "errorMessage": ""
     }
 
-@app.post("/projects/search")
+@app.post("/projects/search_project")
 def search_projects(search: ProjectSearch):
     filters = {
         key: value.strip()
