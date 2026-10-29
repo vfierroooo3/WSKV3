@@ -3,6 +3,7 @@
 Only the Austin data has quantities and unit prices, so Dallas and Texas
 always come back as "not available" (see the Projects Group API Contract).
 """
+import logging
 import math
 import os
 import re
@@ -12,18 +13,25 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict
 
-from database import client
+from azure_sql import get_connection
 
 router = APIRouter()
+log = logging.getLogger(__name__)
 
-# Ranya's Atlas database; override with HARDWARE_DB in .env if it moves.
-hardware_db = client[os.environ.get("HARDWARE_DB", "apad-hardware")]
-austin_collection = hardware_db["austin"]
+# Typed view over stg_austin (loaded by the ADF pipeline). Override with AUSTIN_VIEW.
+AUSTIN_VIEW = os.environ.get("AUSTIN_VIEW", "dbo.vw_austin")
+if not re.fullmatch(r"[A-Za-z_][\w]*(\.[A-Za-z_][\w]*)?", AUSTIN_VIEW):
+    raise ValueError(f"Invalid AUSTIN_VIEW: {AUSTIN_VIEW!r}")
 
-# Field names differ depending on how the data was loaded (raw SODA API
-# vs. a cleaned/categorized load), so check each known spelling.
-CATEGORY_FIELDS = ["category", "commodity_description", "Commodity Description"]
-PRICE_FIELDS = ["unit_price", "Unit Price", "unitPrice"]
+# Category = commodity_description (e.g. "LIGHTS, EMERGENCY") or the commodity code.
+# Rows with a 0 unit price / 0 quantity are price-agreement lump sums, not unit purchases.
+AUSTIN_PRICES_SQL = f"""
+    SELECT unit_price
+    FROM {AUSTIN_VIEW}
+    WHERE (UPPER(LTRIM(RTRIM(commodity_description))) = UPPER(?) OR CONVERT(varchar(50), commodity) = ?)
+      AND unit_price > 0
+      AND quantity > 0
+"""
 
 MIN_PURCHASES = 3
 NOT_AVAILABLE = "not available"
@@ -65,18 +73,13 @@ def austin_unit_price(category):
     Returns "not available" when there are fewer than MIN_PURCHASES priced
     purchases. Reusable by /get_budget_context.
     """
-    match = {"$regex": f"^{re.escape(category)}$", "$options": "i"}
-    query = {"$or": [{field: match} for field in CATEGORY_FIELDS]}
-    projection = {field: 1 for field in PRICE_FIELDS}
-    projection["_id"] = 0
+    conn = get_connection()
+    try:
+        rows = conn.cursor().execute(AUSTIN_PRICES_SQL, category, category).fetchall()
+    finally:
+        conn.close()
 
-    prices = []
-    for doc in austin_collection.find(query, projection):
-        for field in PRICE_FIELDS:
-            price = _to_price(doc.get(field))
-            if price is not None:
-                prices.append(price)
-                break
+    prices = [p for p in (_to_price(row[0]) for row in rows) if p is not None]
 
     if len(prices) < MIN_PURCHASES:
         return NOT_AVAILABLE
@@ -99,11 +102,20 @@ def get_unit_price(request: UnitPriceRequest):
             content={"success": False, "message": "category is required"},
         )
 
+    try:
+        austin = austin_unit_price(category)
+    except Exception:
+        log.exception("Azure SQL query failed for /get_unit_price")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "message": "price data is unavailable right now"},
+        )
+
     return {
         "success": True,
         "category": category,
         "unitPrice": {
-            "Austin": austin_unit_price(category),
+            "Austin": austin,
             "Dallas": NOT_AVAILABLE,
             "Texas": NOT_AVAILABLE,
         },
