@@ -1,7 +1,9 @@
 from database import project_db
-from pymongo.errors import PyMongoError
+from pymongo.errors import PyMongoError, DuplicateKeyError
 from fastapi.responses import JSONResponse
 from fastapi import FastAPI, Request, HTTPException
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from schemas import ProjectCreate, ProjectAction, ProjectSearch
 
 app = FastAPI()
@@ -50,7 +52,7 @@ def leave_project(project: ProjectAction):
         },
         {"$pull": {"joined_users": project.userId}}
     )
-    check_update_result(result, "User is not a member of this project")    
+    check_update_result(result, "User is not a member of this project")
 
     return {
         "success": True,
@@ -111,16 +113,64 @@ def project_info(projectId: str):
         "projectInfo": project
     }
 
-# Error Handler
+def error_response(status_code, message, headers=None):
+    return JSONResponse(
+        status_code=status_code,
+        content={
+            "success": False,
+            "errorMessage": message
+        },
+        headers=headers
+    )
+
+
+# HTTP Error: 404、409
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(
+    request: Request,
+    exc: StarletteHTTPException
+):
+    return error_response(
+        exc.status_code,
+        str(exc.detail),
+        headers=exc.headers
+    )
+
+# Input Valid Error：422
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(
+    request: Request,
+    exc: RequestValidationError
+):
+    messages = []
+
+    for error in exc.errors():
+        field = ".".join(str(part) for part in error["loc"])
+        messages.append(f"{field}: {error['msg']}")
+
+    return error_response(
+        422,
+        "; ".join(messages)
+    )
+
+# Unique Key Error：409
+@app.exception_handler(DuplicateKeyError)
+async def duplicate_key_exception_handler(
+    request: Request,
+    exc: DuplicateKeyError
+):
+    return error_response(
+        409,
+        "Project already exists or another unique field conflicts"
+    )
+
+# MongoDB Error
 @app.exception_handler(PyMongoError)
 async def mongodb_exception_handler(
     request: Request,
     exc: PyMongoError
 ):
-    return JSONResponse(
-        status_code=500,
-        content={
-            "success": False,
-            "errorMessage": str(exc)
-        }
+    return error_response(
+        500,
+        "Database operation failed"
     )
