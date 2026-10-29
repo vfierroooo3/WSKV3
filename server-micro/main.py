@@ -78,7 +78,7 @@ def search_projects(search: ProjectSearch):
     )
 
     return {
-        "projects": projects
+        "projectList": projects
     }
 
 def check_update_result(result, error_message):
@@ -93,7 +93,24 @@ def check_update_result(result, error_message):
             status_code=409,
             detail=error_message
         )
-    
+
+@app.get("/projects/{projectId}")
+def project_info(projectId: str):
+    project = projects_collection.find_one(
+        {"projectId": projectId},
+        {"_id": 0}
+    )
+
+    if project is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Project not found"
+        )
+
+    return {
+        "projectInfo": project
+    }
+
 # Error Handler
 @app.exception_handler(PyMongoError)
 async def mongodb_exception_handler(
