@@ -8,14 +8,14 @@ app = FastAPI()
 
 projects_collection = project_db["projects"]
 projects_collection.create_index(
-    [("projectId", 1), ("projectCreatorId", 1)],
+    [("projectId", 1), ("orgId", 1)],
     unique=True
 )
 
 @app.post("/projects/create_project")
 def create_project(project: ProjectCreate):
     project_data = project.model_dump()
-    project_data["joined_users"] = []
+    project_data["joined_users"] = [project.creatorId]
 
     projects_collection.insert_one(project_data)
 
@@ -29,7 +29,7 @@ def join_project(project: ProjectAction):
     result = projects_collection.update_one(
         {
             "projectId": project.projectId,
-            "projectCreatorId": project.projectCreatorId
+            "orgId": project.orgId
         },
         {"$addToSet": {"joined_users": project.userId}}
     )
@@ -46,7 +46,7 @@ def leave_project(project: ProjectAction):
     result = projects_collection.update_one(
         {
             "projectId": project.projectId,
-            "projectCreatorId": project.projectCreatorId
+            "orgId": project.orgId
         },
         {"$pull": {"joined_users": project.userId}}
     )
@@ -72,7 +72,7 @@ def search_projects(search: ProjectSearch):
                 "_id": 0,
                 "projectId": 1,
                 "projectName": 1,
-                "projectCreatorId": 1
+                "orgId": 1
             }
         )
     )
