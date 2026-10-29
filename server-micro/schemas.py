@@ -5,7 +5,6 @@ class HardwareItem(BaseModel):
     hardwareName: str = Field(min_length=1)
     capacity: int = Field(gt=0)
 
-
 class ProjectCreate(BaseModel):
     creatorId: str = Field(min_length=1)
     projectId: str = Field(min_length=1)

@@ -1,12 +1,12 @@
 from database import project_db
-from pymongo.errors import PyMongoError, DuplicateKeyError
-from fastapi.responses import JSONResponse
-from fastapi import FastAPI, Request, HTTPException
-from fastapi.exceptions import RequestValidationError
-from starlette.exceptions import HTTPException as StarletteHTTPException
+from fastapi import FastAPI, HTTPException
 from schemas import ProjectCreate, ProjectAction, ProjectSearch
+from exception_handlers import register_exception_handlers
+import httpx
+from hardware_client import get_hardware_name
 
 app = FastAPI()
+register_exception_handlers(app)
 
 projects_collection = project_db["projects"]
 projects_collection.create_index(
@@ -97,80 +97,33 @@ def check_update_result(result, error_message):
         )
 
 @app.get("/projects/{projectId}")
-def project_info(projectId: str):
+async def project_info(projectId: str, orgId: str):
     project = projects_collection.find_one(
-        {"projectId": projectId},
+        {
+            "projectId": projectId,
+            "orgId": orgId
+        },
         {"_id": 0}
     )
-
     if project is None:
         raise HTTPException(
             status_code=404,
             detail="Project not found"
         )
+    
+    hardware_names = {}
+
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        for hardware in project.get("hardwareList", []):
+            hardware_id = hardware["hardwareId"]
+            if hardware_id not in hardware_names:
+                hardware_names[hardware_id] = await get_hardware_name(
+                    client,
+                    hardware_id
+                )
+
+            hardware["hardwareName"] = hardware_names[hardware_id]
 
     return {
         "projectInfo": project
     }
-
-def error_response(status_code, message, headers=None):
-    return JSONResponse(
-        status_code=status_code,
-        content={
-            "success": False,
-            "errorMessage": message
-        },
-        headers=headers
-    )
-
-
-# HTTP Error: 404、409
-@app.exception_handler(StarletteHTTPException)
-async def http_exception_handler(
-    request: Request,
-    exc: StarletteHTTPException
-):
-    return error_response(
-        exc.status_code,
-        str(exc.detail),
-        headers=exc.headers
-    )
-
-# Input Valid Error：422
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(
-    request: Request,
-    exc: RequestValidationError
-):
-    messages = []
-
-    for error in exc.errors():
-        field = ".".join(str(part) for part in error["loc"])
-        messages.append(f"{field}: {error['msg']}")
-
-    return error_response(
-        422,
-        "; ".join(messages)
-    )
-
-# Unique Key Error：409
-@app.exception_handler(DuplicateKeyError)
-async def duplicate_key_exception_handler(
-    request: Request,
-    exc: DuplicateKeyError
-):
-    return error_response(
-        409,
-        "Project already exists or another unique field conflicts"
-    )
-
-# MongoDB Error
-@app.exception_handler(PyMongoError)
-async def mongodb_exception_handler(
-    request: Request,
-    exc: PyMongoError
-):
-    return error_response(
-        500,
-        "Database operation failed"
-    )
