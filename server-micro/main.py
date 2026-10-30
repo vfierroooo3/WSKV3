@@ -4,8 +4,10 @@ from pymongo import MongoClient
 from schemas import ProjectCreate
 from fastapi.responses import JSONResponse
 from pymongo.errors import PyMongoError
+from unit_price import router as unit_price_router
 
 app = FastAPI()
+app.include_router(unit_price_router)
 
 projects_collection = db["projects"]
 
