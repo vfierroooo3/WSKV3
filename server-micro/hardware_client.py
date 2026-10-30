@@ -2,7 +2,6 @@ import os
 import httpx
 from fastapi import HTTPException
 
-
 async def get_hardware_name(
     client: httpx.AsyncClient,
     hardware_id: str
