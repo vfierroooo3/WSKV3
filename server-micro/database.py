@@ -2,6 +2,9 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 from pymongo import MongoClient
+from dotenv import load_dotenv
+
+load_dotenv()
 
 load_dotenv(Path(__file__).with_name(".env"))
 
