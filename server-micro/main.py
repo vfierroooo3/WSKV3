@@ -1,5 +1,6 @@
 from database import project_db
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from schemas import ProjectCreate, ProjectAction, ProjectSearch
 from exception_handlers import register_exception_handlers
 import httpx
@@ -7,6 +8,17 @@ from hardware_client import get_hardware_name
 
 app = FastAPI()
 register_exception_handlers(app)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        # After frontend deployed URL
+        # "https://your-frontend.com",
+    ],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 projects_collection = project_db["projects"]
 projects_collection.create_index(
