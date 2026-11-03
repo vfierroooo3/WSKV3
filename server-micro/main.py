@@ -6,10 +6,12 @@ from exception_handlers import register_exception_handlers
 import httpx
 from hardware_client import get_hardware_name
 from unit_price import router as unit_price_router
+from budget_context import router as budget_context_router
 from department_spend import router as department_spend_router
 
 app = FastAPI()
 app.include_router(unit_price_router)
+app.include_router(budget_context_router)
 app.include_router(department_spend_router)
 register_exception_handlers(app)
 
