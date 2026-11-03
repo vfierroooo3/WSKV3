@@ -9,15 +9,15 @@ from unit_price import router as unit_price_router
 from department_spend import router as department_spend_router
 
 app = FastAPI()
-register_exception_handlers(app)
 app.include_router(unit_price_router)
 app.include_router(department_spend_router)
+register_exception_handlers(app)
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        # After frontend deployed URL
-        # "https://your-frontend.com",
+        # Atenea's team URL
+        "https://hardware-rental.wonderfulsky-6d5c5842.westus.azurecontainerapps.io"
     ],
     allow_credentials=False,
     allow_methods=["*"],
