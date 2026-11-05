@@ -3,8 +3,6 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from schemas import ProjectCreate, ProjectAction, ProjectSearch
 from exception_handlers import register_exception_handlers
-import httpx
-from hardware_client import get_hardware_name
 from unit_price import router as unit_price_router
 from budget_context import router as budget_context_router
 from department_spend import router as department_spend_router
