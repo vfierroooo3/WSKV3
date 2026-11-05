@@ -128,19 +128,6 @@ async def project_info(projectId: str, orgId: str):
             status_code=404,
             detail="Project not found"
         )
-    
-    hardware_names = {}
-    #TODO waiting for the hw team provide the api
-    # async with httpx.AsyncClient(timeout=10.0) as client:
-    #     for hardware in project.get("hardwareList", []):
-    #         hardware_id = hardware["hardwareId"]
-    #         if hardware_id not in hardware_names:
-    #             hardware_names[hardware_id] = await get_hardware_name(
-    #                 client,
-    #                 hardware_id
-    #             )
-
-    #         hardware["hardwareName"] = hardware_names[hardware_id]
 
     return {
         "projectInfo": project
