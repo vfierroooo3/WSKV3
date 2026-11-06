@@ -15,7 +15,11 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
+# gRPC code from protos/projects.proto (not committed; see generate_protos.py)
+RUN python generate_protos.py
 
-EXPOSE 8000
+# 8000 = REST (default command). 50051 = gRPC: run the same image with the
+# command "python grpc_server.py" (Azure: second container app, HTTP/2 ingress).
+EXPOSE 8000 50051
 
 CMD ["fastapi", "run", "main.py", "--host", "0.0.0.0", "--port", "8000"]
