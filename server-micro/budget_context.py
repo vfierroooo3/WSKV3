@@ -8,7 +8,7 @@ from typing import List
 
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 # Import the existing function and constant from your unit_price module
 from unit_price import austin_unit_price, NOT_AVAILABLE
@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 
 class BudgetItemRequest(BaseModel):
     description: str
-    quantity: int
+    quantity: int = Field(gt=0)
 
 
 class BudgetContextRequest(BaseModel):
@@ -66,6 +66,8 @@ def get_budget_context(request: BudgetContextRequest):
         total_typical = 0.0
         total_high = 0.0
         has_valid_estimates = False
+        
+        unpriced_items_count = 0
 
         for item in request.items:
             desc = item.description.strip()
@@ -75,13 +77,11 @@ def get_budget_context(request: BudgetContextRequest):
             est_cost = NOT_AVAILABLE
 
             if matched_category:
-                # Reuses Sai's logic: returns dict with pricing or "not available"
                 price_data = austin_unit_price(matched_category)
 
                 if isinstance(price_data, dict):
                     unit_price = price_data
                     
-                    # Calculate extensions
                     e_low = round(price_data["low"] * item.quantity, 2)
                     e_typ = round(price_data["median"] * item.quantity, 2)
                     e_high = round(price_data["high"] * item.quantity, 2)
@@ -96,6 +96,10 @@ def get_budget_context(request: BudgetContextRequest):
                     total_typical += e_typ
                     total_high += e_high
                     has_valid_estimates = True
+                else:
+                    unpriced_items_count += 1
+            else:
+                unpriced_items_count += 1
 
             item_results.append({
                 "description": desc,
@@ -112,7 +116,7 @@ def get_budget_context(request: BudgetContextRequest):
                 "typical": round(total_typical, 2),
                 "high": round(total_high, 2)
             }
-            within_budget = total_typical <= request.budget
+            within_budget = (total_typical <= request.budget) if unpriced_items_count == 0 else None
         else:
             total_estimate = NOT_AVAILABLE
             within_budget = None
@@ -123,7 +127,8 @@ def get_budget_context(request: BudgetContextRequest):
             "budget": request.budget,
             "items": item_results,
             "totalEstimate": total_estimate,
-            "withinBudget": within_budget
+            "withinBudget": within_budget,
+            "unpricedItems": unpriced_items_count
         }
 
     except Exception:
