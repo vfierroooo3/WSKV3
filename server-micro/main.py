@@ -4,8 +4,6 @@ from fastapi import BackgroundTasks, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from schemas import ProjectCreate, ProjectAction, ProjectSearch
 from exception_handlers import register_exception_handlers
-import httpx
-from hardware_client import get_hardware_name
 from unit_price import router as unit_price_router
 from budget_context import router as budget_context_router
 from department_spend import router as department_spend_router
@@ -169,19 +167,6 @@ async def project_info(projectId: str, orgId: str):
             status_code=404,
             detail="Project not found"
         )
-    
-    hardware_names = {}
-    #TODO waiting for the hw team provide the api
-    # async with httpx.AsyncClient(timeout=10.0) as client:
-    #     for hardware in project.get("hardwareList", []):
-    #         hardware_id = hardware["hardwareId"]
-    #         if hardware_id not in hardware_names:
-    #             hardware_names[hardware_id] = await get_hardware_name(
-    #                 client,
-    #                 hardware_id
-    #             )
-
-    #         hardware["hardwareName"] = hardware_names[hardware_id]
 
     return {
         "projectInfo": project

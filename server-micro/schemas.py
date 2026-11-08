@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 
 class HardwareItem(BaseModel):
     hardwareId: str = Field(min_length=1)
-    capacity: int = Field(gt=0)
+    allocation: int = Field(gt=0)
 
 class ProjectCreate(BaseModel):
     creatorId: str = Field(min_length=1)
