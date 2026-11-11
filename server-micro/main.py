@@ -87,11 +87,17 @@ def leave_project(project: ProjectAction, background_tasks: BackgroundTasks):
 
 @app.post("/projects/search_project")
 def search_projects(search: ProjectSearch):
-    filters = {
-        key: value.strip()
-        for key, value in search.model_dump().items()
-        if value is not None and value.strip() != ""
+    field_mapping = {
+        "projectId": "projectId",
+        "orgId": "orgId",
+        "userId": "joined_users",
     }
+
+    filters = {}
+    for key, value in search.model_dump(exclude_none=True).items():
+        value = value.strip()
+        if value:
+            filters[field_mapping[key]] = value
 
     projects = list(
         projects_collection.find(
@@ -100,14 +106,13 @@ def search_projects(search: ProjectSearch):
                 "_id": 0,
                 "projectId": 1,
                 "projectName": 1,
-                "orgId": 1
-            }
+                "orgId": 1,
+                "joined_users": 1,
+            },
         )
     )
 
-    return {
-        "projectList": projects
-    }
+    return {"projectList": projects}
 
 def notify_project_creator(workflow_id, org_id, project_id, user_id):
     """Background task: tell the project's creator that someone joined or left.
