@@ -104,6 +104,7 @@ def get_budget_context(request: BudgetContextRequest):
             item_results.append({
                 "description": desc,
                 "quantity": item.quantity,
+                "priced": bool(matched_category and unit_price != NOT_AVAILABLE),
                 "matchedCategory": matched_category if unit_price != NOT_AVAILABLE else None,
                 "confidence": confidence if unit_price != NOT_AVAILABLE else 0.0,
                 "unitPrice": unit_price,
