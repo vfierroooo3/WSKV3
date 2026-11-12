@@ -2,13 +2,13 @@ from pydantic import BaseModel, Field
 
 class HardwareItem(BaseModel):
     hardwareId: str = Field(min_length=1)
-    capacity: int = Field(gt=0)
+    allocation: int = Field(gt=0)
 
 class ProjectCreate(BaseModel):
     creatorId: str = Field(min_length=1)
     projectId: str = Field(min_length=1)
     projectName: str = Field(min_length=1)
-    projectDesc: str = ""
+    projectDesc: str = Field(min_length=1)
     orgId: str = Field(min_length=1)
     budget: int = Field(ge=0)
     hardwareList: list[HardwareItem] = Field(default_factory=list)
@@ -21,3 +21,4 @@ class ProjectAction(BaseModel):
 class ProjectSearch(BaseModel):
     projectId: str | None = None
     orgId: str | None = None
+    userId: str | None = None
