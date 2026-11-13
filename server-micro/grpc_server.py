@@ -249,9 +249,94 @@ class ProjectsService(projects_pb2_grpc.ProjectsServiceServicer):
             dallas=projects_pb2.SourceUnitPrice(available=False),
             texas=projects_pb2.SourceUnitPrice(available=False),
         )
+    
+    @handle_errors
+    def GetBudgetContext(self, request, context):
+        if not request.items:
+            raise invalid_argument("items list cannot be empty")
+
+        item_results = []
+        total_low = 0.0
+        total_typical = 0.0
+        total_high = 0.0
+        has_valid_estimates = False
+        unpriced_items_count = 0
+
+        for item in request.items:
+            if item.quantity <= 0:
+                raise invalid_argument("quantity must be > 0")
+
+            desc = item.description.strip()
+            # Placeholder matcher logic from the REST app
+            matched_category, confidence = (desc, 1.0) if desc else (None, 0.0)
+
+            item_kwargs = {
+                "description": desc,
+                "quantity": item.quantity,
+                "priced": False,
+                "confidence": 0.0
+            }
+
+            if matched_category:
+                try:
+                    price_data = austin_unit_price(matched_category)
+                except Exception:
+                    log.exception("Azure SQL query failed for GetBudgetContext")
+                    raise unavailable("price data is unavailable right now")
+
+                if isinstance(price_data, dict):
+                    e_low = round(price_data["low"] * item.quantity, 2)
+                    e_typ = round(price_data["median"] * item.quantity, 2)
+                    e_high = round(price_data["high"] * item.quantity, 2)
+
+                    item_kwargs.update({
+                        "priced": True,
+                        "matched_category": matched_category,
+                        "confidence": confidence,
+                        "unit_price": projects_pb2.PriceStats(
+                            median=price_data["median"],
+                            low=price_data["low"],
+                            high=price_data["high"],
+                            purchases=price_data["purchases"],
+                        ),
+                        "estimated_cost": projects_pb2.CostRange(
+                            low=e_low,
+                            typical=e_typ,
+                            high=e_high
+                        )
+                    })
+
+                    total_low += e_low
+                    total_typical += e_typ
+                    total_high += e_high
+                    has_valid_estimates = True
+                else:
+                    unpriced_items_count += 1
+            else:
+                unpriced_items_count += 1
+
+            item_results.append(projects_pb2.ItemEstimate(**item_kwargs))
+
+        response = projects_pb2.GetBudgetContextResponse(
+            org_id=request.org_id,
+            budget=request.budget,
+            items=item_results,
+            unpriced_items=unpriced_items_count
+        )
+
+        if has_valid_estimates:
+            response.total_estimate.CopyFrom(projects_pb2.CostRange(
+                low=round(total_low, 2),
+                typical=round(total_typical, 2),
+                high=round(total_high, 2)
+            ))
+
+        if unpriced_items_count == 0:
+            response.within_budget = (total_typical <= request.budget)
+
+        return response
 
     # Still to add (they return UNIMPLEMENTED until then):
-    #   Ranya:     GetBudgetContext
     #   Valentina: GetDepartmentSpend
 
 
