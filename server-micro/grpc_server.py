@@ -33,6 +33,7 @@ import projects_pb2_grpc
 import services
 from notifications import notify
 from unit_price import NOT_AVAILABLE, austin_unit_price
+from department_spend import MIN_KEYWORD_LENGTH, department_spend
 
 # Same .env as the REST app (AZURE_SQL_*, MONGODB_URI) for local runs; Azure
 # passes these as app settings instead.
@@ -147,6 +148,23 @@ def unit_price_source(result):
             low=result["low"],
             high=result["high"],
             purchases=result["purchases"],
+        ),
+    )
+
+
+def spend_source(result):
+    """REST returns stats or "not available"; gRPC returns available + stats."""
+    if result == NOT_AVAILABLE or not isinstance(result, dict):
+        return projects_pb2.SourceSpend(available=False)
+    return projects_pb2.SourceSpend(
+        available=True,
+        stats=projects_pb2.SpendStats(
+            typical_yearly=result["typicalYearly"],
+            low=result["low"],
+            high=result["high"],
+            departments=result["departments"],
+            years=result["years"],
+            matched_labels=result.get("matchedLabels", []),
         ),
     )
 
@@ -336,8 +354,23 @@ class ProjectsService(projects_pb2_grpc.ProjectsServiceServicer):
 
         return response
 
-    # Still to add (they return UNIMPLEMENTED until then):
-    #   Valentina: GetDepartmentSpend
+    @handle_errors
+    def GetDepartmentSpend(self, request, context):
+        keyword = request.keyword.strip()
+        if len(keyword) < MIN_KEYWORD_LENGTH:
+            raise invalid_argument(
+                f"keyword must be at least {MIN_KEYWORD_LENGTH} characters")
+        try:
+            spend = department_spend(keyword)
+        except Exception:
+            log.exception("Azure SQL query failed for GetDepartmentSpend")
+            raise unavailable("spending data is unavailable right now")
+        return projects_pb2.GetDepartmentSpendResponse(
+            keyword=keyword,
+            austin=spend_source(spend["Austin"]),
+            dallas=spend_source(spend["Dallas"]),
+            texas=spend_source(spend["Texas"]),
+        )
 
 
 def build_server(port=PORT):
