@@ -17,6 +17,7 @@ class ProjectAction(BaseModel):
     projectId: str = Field(min_length=1)
     orgId: str = Field(min_length=1)
     userId: str = Field(min_length=1)
+    userName: str | None = None  # optional display name for notifications
 
 class ProjectSearch(BaseModel):
     projectId: str | None = None

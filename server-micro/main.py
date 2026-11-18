@@ -57,7 +57,7 @@ def join_project(project: ProjectAction, background_tasks: BackgroundTasks):
     check_update_result(result, "User already joined this project")
     background_tasks.add_task(
         notify_project_creator, "member-joined",
-        project.orgId, project.projectId, project.userId
+        project.orgId, project.projectId, project.userId, project.userName
     )
 
     return {
@@ -77,7 +77,7 @@ def leave_project(project: ProjectAction, background_tasks: BackgroundTasks):
     check_update_result(result, "User is not a member of this project")
     background_tasks.add_task(
         notify_project_creator, "member-left",
-        project.orgId, project.projectId, project.userId
+        project.orgId, project.projectId, project.userId, project.userName
     )
 
     return {
@@ -114,7 +114,7 @@ def search_projects(search: ProjectSearch):
 
     return {"projectList": projects}
 
-def notify_project_creator(workflow_id, org_id, project_id, user_id):
+def notify_project_creator(workflow_id, org_id, project_id, user_id, user_name=None):
     """Background task: tell the project's creator that someone joined or left.
 
     Runs after the response is sent, so a slow or failing Novu call never
@@ -137,13 +137,18 @@ def notify_project_creator(workflow_id, org_id, project_id, user_id):
                 "orgId": org_id,
                 "projectId": project_id,
                 "projectName": project.get("projectName", ""),
-                "userId": user_id
+                "userId": user_id,
+                "userName": display_name(user_name, user_id)
             }
         )
     except Exception:
         logging.getLogger(__name__).exception(
             "Could not notify creator of %s/%s", org_id, project_id
         )
+
+def display_name(user_name, user_id):
+    """Name shown in notifications; falls back to the user ID if no name was sent."""
+    return (user_name or "").strip() or user_id
 
 def check_update_result(result, error_message):
     if result.matched_count == 0:

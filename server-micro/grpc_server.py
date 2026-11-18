@@ -119,8 +119,11 @@ def require(value, field):
     return value
 
 
-def notify_creator(workflow_id, org_id, project_id, user_id):
-    """Tell the project's creator someone joined or left (never raises)."""
+def notify_creator(workflow_id, org_id, project_id, user_id, user_name=""):
+    """Tell the project's creator someone joined or left (never raises).
+
+    userName falls back to the user ID when the client didn't send a name.
+    """
     try:
         project = services.get_project(org_id, project_id)
     except Exception:
@@ -134,6 +137,7 @@ def notify_creator(workflow_id, org_id, project_id, user_id):
         "projectId": project_id,
         "projectName": project.get("projectName", ""),
         "userId": user_id,
+        "userName": user_name.strip() or user_id,
     })
 
 
@@ -207,8 +211,9 @@ class ProjectsService(projects_pb2_grpc.ProjectsServiceServicer):
         org_id = require(request.org_id, "org_id")
         project_id = require(request.project_id, "project_id")
         user_id = require(request.user_id, "user_id")
+        user_name = request.user_name if request.HasField("user_name") else ""
         call_service(operation, org_id, project_id, user_id)
-        notify_creator(workflow_id, org_id, project_id, user_id)
+        notify_creator(workflow_id, org_id, project_id, user_id, user_name)
         return projects_pb2.MembershipResponse()
 
     @handle_errors
