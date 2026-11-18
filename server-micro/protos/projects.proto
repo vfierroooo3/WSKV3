@@ -29,6 +29,7 @@ service ProjectsService {
   rpc LeaveProject(MembershipRequest) returns (MembershipResponse);
   rpc SearchProjects(SearchProjectsRequest) returns (SearchProjectsResponse);
   rpc GetProject(GetProjectRequest) returns (GetProjectResponse);
+  rpc DeleteProject(DeleteProjectRequest) returns (DeleteProjectResponse);
 
   // Price context (Azure SQL)
   rpc GetUnitPrice(GetUnitPriceRequest) returns (GetUnitPriceResponse);
@@ -69,7 +70,10 @@ message CreateProjectRequest {
 }
 
 // Empty on success. Errors: INVALID_ARGUMENT, ALREADY_EXISTS.
-message CreateProjectResponse {}
+message CreateProjectResponse {
+  bool success = 1;
+  string error_message = 2;
+}
 
 // ============================================================ JoinProject / LeaveProject
 
@@ -84,7 +88,10 @@ message MembershipRequest {
 // Join errors:  NOT_FOUND, ALREADY_EXISTS (already a member).
 // Leave errors: NOT_FOUND, FAILED_PRECONDITION (not a member).
 // A successful join or leave also notifies the project creator through Novu.
-message MembershipResponse {}
+message MembershipResponse {
+  bool success = 1;
+  string error_message = 2;
+}
 
 // ============================================================ SearchProjects
 
@@ -106,6 +113,19 @@ message ProjectSummary {
 // An empty result is OK with an empty list, not NOT_FOUND.
 message SearchProjectsResponse {
   repeated ProjectSummary project_list = 1;
+}
+
+// ============================================================ DeleteProject
+
+message DeleteProjectRequest {
+  string org_id = 1;      // required
+  string project_id = 2;  // required
+  string user_id = 3;     // required
+}
+
+message DeleteProjectResponse {
+  bool success = 1;
+  string error_message = 2;
 }
 
 // ============================================================ GetProject
