@@ -21,8 +21,8 @@ def _hardware_stub():
     return hardware_pb2_grpc.HardwareServiceStub(channel)
 
 def _hardware_metadata():
-    username = os.environ["HARDWARE_API_USERNAME"]
-    password = os.environ["HARDWARE_API_PASSWORD"]
+    username = os.environ["HARDWARE_API_USER"]
+    password = os.environ["HARDWARE_API_KEY"]
     credentials = base64.b64encode(
         f"{username}:{password}".encode("utf-8")
     ).decode("ascii")

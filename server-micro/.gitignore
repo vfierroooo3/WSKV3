@@ -5,6 +5,5 @@ projects_pb2.py
 projects_pb2.pyi
 projects_pb2_grpc.py
 # hardware protos
-hardware.protos
 hardware_pb2.py
 hardware_pb2_grpc.py

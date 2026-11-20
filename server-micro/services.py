@@ -74,72 +74,81 @@ def get_project(org_id: str, project_id: str) -> dict:
     return project
 
 def delete_project(org_id: str, project_id: str, user_id: str) -> None:
-    # project = get_project(org_id, project_id)
-    # if project.get("creatorId") != user_id:
-    #     raise ProjectError(
-    #         "PERMISSION_DENIED",
-    #         "Only the project creator can delete this project",
-    #     )
+    # 1. Confirm that the caller is the project creator.
+    project = get_project(org_id, project_id)
+
+    if project.get("creatorId") != user_id:
+        raise ProjectError(
+            "PERMISSION_DENIED",
+            "Only the project creator can delete this project",
+        )
 
     hardware_project_id = f"{org_id}:{project_id}"
-    returned_checkout_ids = set()
 
     try:
-        # 1. Return every outstanding checkout.
-        # Fully returned records disappear from page 1.
+        # 2. Reject deletion if any hardware is still checked out.
         checkouts = hardware_client.get_hardware_checkouts_list(
-            hardware_project_id, page=1, size=100
+            hardware_project_id,
+            page=1,
+            size=1,
         )
-        for checkout in checkouts:
-            if (
-                checkout.project_id != hardware_project_id
-                or not checkout.id
-                or checkout.outstanding <= 0
-                or checkout.id in returned_checkout_ids
-            ):
-                raise ProjectError(
-                    "FAILED_PRECONDITION",
-                    "Hardware service returned an unexpected checkout",
-                )
-
-            hardware_client.return_checkout(
-                checkout_id=checkout.id,
-                quantity=checkout.outstanding,
-                expected_version=checkout.version,
-                request_id=uuid4().hex,
+        print(checkouts)
+        if checkouts:
+            raise ProjectError(
+                "FAILED_PRECONDITION",
+                "Return checked-out hardware before deleting this project",
             )
-            returned_checkout_ids.add(checkout.id)
 
-        # 2. Read all allocation pages before releasing any reservation.
+        # 3. Read all allocation pages before releasing reservations.
         allocations = []
         page = 1
+
         while True:
             response = hardware_client.get_hardware_allocations_list(
-                hardware_project_id, page=page, size=100
+                hardware_project_id,
+                page=page,
+                size=100,
             )
             allocations.extend(response.items)
 
             if len(allocations) >= response.total:
                 break
+
             if not response.items:
                 raise ProjectError(
                     "FAILED_PRECONDITION",
                     "Hardware service returned incomplete allocations",
                 )
+
             page += 1
 
-        # Check every allocation before making any release calls.
+        # Validate every allocation before making any changes.
         for allocation in allocations:
-            if allocation.project_id != hardware_project_id or allocation.out != 0:
+            if (
+                allocation.project_id != hardware_project_id
+                or not allocation.hardware_id
+                or allocation.quantity < 0
+                or allocation.out < 0
+            ):
                 raise ProjectError(
                     "FAILED_PRECONDITION",
-                    "Could not verify that all project hardware was returned",
+                    "Hardware service returned an unexpected allocation",
                 )
 
-        # 3. Set each positive reservation to zero.
-        for hardware_id in sorted({
-            item.hardware_id for item in allocations if item.quantity > 0
-        }):
+            if allocation.out > 0:
+                raise ProjectError(
+                    "FAILED_PRECONDITION",
+                    "Return checked-out hardware before deleting this project",
+                )
+
+        # 4. Release each positive reservation by setting it to zero.
+        hardware_ids = {
+            item.hardware_id
+            for item in allocations
+            if item.quantity > 0
+        }
+
+        for hardware_id in sorted(hardware_ids):
             hardware_client.release_project_allocation(
                 hardware_id=hardware_id,
                 project_id=hardware_project_id,
@@ -153,11 +162,15 @@ def delete_project(org_id: str, project_id: str, user_id: str) -> None:
             "Hardware cleanup failed. Project was kept.",
         ) from exc
 
-    # 4. Delete the project only after Hardware cleanup succeeds.
+    # 5. Delete only after all reservations have been released.
     result = projects_collection.delete_one({
         "orgId": org_id,
         "projectId": project_id,
         "creatorId": user_id,
     })
+
     if result.deleted_count == 0:
-        raise ProjectError("NOT_FOUND", "Project no longer matches the delete request")
+        raise ProjectError(
+            "NOT_FOUND",
+            "Project no longer matches the delete request",
+        )
