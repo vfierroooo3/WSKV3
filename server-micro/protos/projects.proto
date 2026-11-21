@@ -171,6 +171,9 @@ message GetUnitPriceResponse {
   SourceUnitPrice austin = 2;
   SourceUnitPrice dallas = 3;
   SourceUnitPrice texas = 4;
+  // ISO 8601 time of the last verified refresh of the Austin data, from the
+  // pipeline's load log; empty if unknown. Additive field (contract-compatible).
+  string data_as_of = 5;
 }
 
 // ============================================================ GetDepartmentSpend

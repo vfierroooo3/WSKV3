@@ -32,6 +32,8 @@ import projects_pb2
 import projects_pb2_grpc
 import services
 from notifications import notify
+from users_client import resolve_user_name
+from data_as_of import source_as_of
 from unit_price import NOT_AVAILABLE, austin_unit_price
 from department_spend import MIN_KEYWORD_LENGTH, department_spend
 
@@ -122,7 +124,8 @@ def require(value, field):
 def notify_creator(workflow_id, org_id, project_id, user_id, user_name=""):
     """Tell the project's creator someone joined or left (never raises).
 
-    userName falls back to the user ID when the client didn't send a name.
+    If the client didn't send a name, it's looked up from the Users service
+    (in the background, so the RPC isn't delayed), then falls back to the user ID.
     """
     try:
         project = services.get_project(org_id, project_id)
@@ -132,13 +135,18 @@ def notify_creator(workflow_id, org_id, project_id, user_id, user_name=""):
     creator_id = project.get("creatorId")
     if not creator_id or creator_id == user_id:
         return
-    notification_pool.submit(notify, workflow_id, [creator_id], {
-        "orgId": org_id,
-        "projectId": project_id,
-        "projectName": project.get("projectName", ""),
-        "userId": user_id,
-        "userName": user_name.strip() or user_id,
-    })
+    project_name = project.get("projectName", "")
+
+    def send():
+        notify(workflow_id, [creator_id], {
+            "orgId": org_id,
+            "projectId": project_id,
+            "projectName": project_name,
+            "userId": user_id,
+            "userName": resolve_user_name(user_name, user_id),
+        })
+
+    notification_pool.submit(send)
 
 
 def unit_price_source(result):
@@ -290,6 +298,7 @@ class ProjectsService(projects_pb2_grpc.ProjectsServiceServicer):
             austin=unit_price_source(austin),
             dallas=projects_pb2.SourceUnitPrice(available=False),
             texas=projects_pb2.SourceUnitPrice(available=False),
+            data_as_of=source_as_of("austin") or "",
         )
     
     @handle_errors

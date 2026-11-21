@@ -8,6 +8,7 @@ from unit_price import router as unit_price_router
 from budget_context import router as budget_context_router
 from department_spend import router as department_spend_router
 from notifications import notify
+from users_client import resolve_user_name
 
 app = FastAPI()
 app.include_router(unit_price_router)
@@ -147,8 +148,8 @@ def notify_project_creator(workflow_id, org_id, project_id, user_id, user_name=N
         )
 
 def display_name(user_name, user_id):
-    """Name shown in notifications; falls back to the user ID if no name was sent."""
-    return (user_name or "").strip() or user_id
+    """Name shown in notifications: the one sent, else the Users service's, else the user ID."""
+    return resolve_user_name(user_name, user_id)
 
 def check_update_result(result, error_message):
     if result.matched_count == 0:
