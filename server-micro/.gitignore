@@ -4,6 +4,5 @@ __pycache__/
 projects_pb2.py
 projects_pb2.pyi
 projects_pb2_grpc.py
-# hardware protos
-hardware_pb2.py
-hardware_pb2_grpc.py
+*_pb2.py*
+*_pb2_grpc.py
