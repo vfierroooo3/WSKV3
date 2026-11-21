@@ -197,7 +197,10 @@ class ProjectsService(projects_pb2_grpc.ProjectsServiceServicer):
             project["hardwareList"].append(
                 {"hardwareId": item.hardware_id.strip(), "allocation": item.allocation})
         call_service(services.create_project, project)
-        return projects_pb2.CreateProjectResponse()
+        return projects_pb2.CreateProjectResponse(
+            success=True,
+            error_message="",
+        )
 
     @handle_errors
     def JoinProject(self, request, context):
@@ -214,7 +217,10 @@ class ProjectsService(projects_pb2_grpc.ProjectsServiceServicer):
         user_name = request.user_name if request.HasField("user_name") else ""
         call_service(operation, org_id, project_id, user_id)
         notify_creator(workflow_id, org_id, project_id, user_id, user_name)
-        return projects_pb2.MembershipResponse()
+        return projects_pb2.MembershipResponse(
+            success=True,
+            error_message="",
+        )
 
     @handle_errors
     def SearchProjects(self, request, context):
@@ -254,6 +260,19 @@ class ProjectsService(projects_pb2_grpc.ProjectsServiceServicer):
             joined_users=project.get("joined_users", []),
         ))
 
+    @handle_errors
+    def DeleteProject(self, request, context):
+        call_service(
+            services.delete_project,
+            require(request.org_id, "org_id"),
+            require(request.project_id, "project_id"),
+            require(request.user_id, "user_id"),
+        )
+        return projects_pb2.DeleteProjectResponse(
+            success=True,
+            error_message="",
+        )
+    
     # ------------------------------------------------ price context
 
     @handle_errors
