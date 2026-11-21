@@ -92,7 +92,6 @@ def delete_project(org_id: str, project_id: str, user_id: str) -> None:
             page=1,
             size=1,
         )
-        print(checkouts)
         if checkouts:
             raise ProjectError(
                 "FAILED_PRECONDITION",
