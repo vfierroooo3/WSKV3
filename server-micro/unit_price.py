@@ -14,6 +14,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict
 
 from azure_sql import get_connection
+from data_as_of import source_as_of
 
 router = APIRouter()
 log = logging.getLogger(__name__)
@@ -119,4 +120,6 @@ def get_unit_price(request: UnitPriceRequest):
             "Dallas": NOT_AVAILABLE,
             "Texas": NOT_AVAILABLE,
         },
+        # When the Austin data was last refreshed and verified (null if unknown)
+        "dataAsOf": source_as_of("austin"),
     }

@@ -1,0 +1,22 @@
+// Users team's UsersService: only the RPC the Projects service calls.
+//
+// TODO(Sai): replace this file with the users.proto the Users team attached in
+// Slack (11/18). It was written from their spec because the attachment wasn't
+// accessible; the package name and field numbers below are assumptions and
+// MUST match theirs, or calls fail with UNIMPLEMENTED / empty fields.
+syntax = "proto3";
+
+package users.v1;
+
+service UsersService {
+  rpc GetUsername(GetUsernameRequest) returns (GetUsernameResponse);
+}
+
+message GetUsernameRequest {
+  string user_id = 1;  // numeric ID sent as a string, e.g. "42"
+}
+
+message GetUsernameResponse {
+  string user_id = 1;
+  string username = 2;
+}
