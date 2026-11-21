@@ -1,5 +1,8 @@
+from uuid import uuid4
 from pymongo.errors import DuplicateKeyError
 from database import project_db
+import hardware_client
+import grpc
 
 projects_collection = project_db["projects"]
 
@@ -69,3 +72,104 @@ def get_project(org_id: str, project_id: str) -> dict:
     if project is None:
         raise ProjectError("NOT_FOUND", "Project not found")
     return project
+
+def delete_project(org_id: str, project_id: str, user_id: str) -> None:
+    # 1. Confirm that the caller is the project creator.
+    project = get_project(org_id, project_id)
+
+    if project.get("creatorId") != user_id:
+        raise ProjectError(
+            "PERMISSION_DENIED",
+            "Only the project creator can delete this project",
+        )
+
+    hardware_project_id = f"{org_id}:{project_id}"
+
+    try:
+        # 2. Reject deletion if any hardware is still checked out.
+        checkouts = hardware_client.get_hardware_checkouts_list(
+            hardware_project_id,
+            page=1,
+            size=1,
+        )
+        if checkouts:
+            raise ProjectError(
+                "FAILED_PRECONDITION",
+                "Return checked-out hardware before deleting this project",
+            )
+
+        # 3. Read all allocation pages before releasing reservations.
+        allocations = []
+        page = 1
+
+        while True:
+            response = hardware_client.get_hardware_allocations_list(
+                hardware_project_id,
+                page=page,
+                size=100,
+            )
+            allocations.extend(response.items)
+
+            if len(allocations) >= response.total:
+                break
+
+            if not response.items:
+                raise ProjectError(
+                    "FAILED_PRECONDITION",
+                    "Hardware service returned incomplete allocations",
+                )
+
+            page += 1
+
+        # Validate every allocation before making any changes.
+        for allocation in allocations:
+            if (
+                allocation.project_id != hardware_project_id
+                or not allocation.hardware_id
+                or allocation.quantity < 0
+                or allocation.out < 0
+            ):
+                raise ProjectError(
+                    "FAILED_PRECONDITION",
+                    "Hardware service returned an unexpected allocation",
+                )
+
+            if allocation.out > 0:
+                raise ProjectError(
+                    "FAILED_PRECONDITION",
+                    "Return checked-out hardware before deleting this project",
+                )
+
+        # 4. Release each positive reservation by setting it to zero.
+        hardware_ids = {
+            item.hardware_id
+            for item in allocations
+            if item.quantity > 0
+        }
+
+        for hardware_id in sorted(hardware_ids):
+            hardware_client.release_project_allocation(
+                hardware_id=hardware_id,
+                project_id=hardware_project_id,
+                request_id=uuid4().hex,
+            )
+
+    except grpc.RpcError as exc:
+        status = exc.code()
+        raise ProjectError(
+            status.name if status else "UNKNOWN",
+            "Hardware cleanup failed. Project was kept.",
+        ) from exc
+
+    # 5. Delete only after all reservations have been released.
+    result = projects_collection.delete_one({
+        "orgId": org_id,
+        "projectId": project_id,
+        "creatorId": user_id,
+    })
+
+    if result.deleted_count == 0:
+        raise ProjectError(
+            "NOT_FOUND",
+            "Project no longer matches the delete request",
+        )
