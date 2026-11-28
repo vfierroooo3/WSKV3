@@ -17,7 +17,7 @@ log = logging.getLogger(__name__)
 # about a minute, so allow a long login and retry a few times before giving up.
 LOGIN_TIMEOUT_SECONDS = 35
 ATTEMPTS = 3
-RETRY_WAIT_SECONDS = 5
+RETRY_WAIT_SECONDS = 10
 
 
 def get_connection():
@@ -39,7 +39,7 @@ def get_connection():
     for attempt in range(1, ATTEMPTS + 1):
         try:
             return pyodbc.connect(conn_str, timeout=LOGIN_TIMEOUT_SECONDS)
-        except pyodbc.OperationalError:
+        except pyodbc.Error:
             if attempt == ATTEMPTS:
                 raise
             log.warning("Azure SQL login failed (attempt %d of %d); the database may "
